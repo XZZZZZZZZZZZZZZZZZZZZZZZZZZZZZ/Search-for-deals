@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ali-Bot | מנוע הדילים החכם</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&display=swap');
+        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
+        .product-card { transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <nav class="bg-white shadow-sm p-4 sticky top-0 z-50 border-b border-gray-100">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-6">
+                <div id="logo" class="text-2xl font-black text-orange-600 tracking-tighter">ALI-BOT</div>
+                <ul class="hidden md:flex gap-6 text-gray-600 font-bold text-sm">
+                    <li><a href="#" class="hover:text-orange-600 transition">ראשי</a></li>
+                    <li><a href="#" id="admin-link" class="hidden text-red-500 border-r pr-4">פאנל ניהול</a></li>
+                </ul>
+            </div>
+            <div id="auth-section">
+                <button onclick="loginWithGoogle()" class="bg-gray-50 border border-gray-200 px-5 py-2 rounded-full flex items-center gap-2 hover:bg-white hover:shadow-sm transition text-sm font-bold">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16">
+                    <span>התחבר עם גוגל</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-[#1a1a1a] py-20 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4">הדילים הכי חזקים בעליאקספרס</h1>
+            <p class="text-orange-400 text-lg mb-8 font-medium">חיפוש חכם מהנמכרים ביותר בלבד 🔥</p>
+            
+            <div class="relative group">
+                <input type="text" id="searchInput" placeholder="מה בא לך למצוא? (למשל: רמקול, מטען, גיימינג)" 
+                       class="w-full p-6 rounded-2xl shadow-2xl outline-none text-xl pr-8 pl-24 border-4 border-transparent focus:border-orange-500 transition-all">
+                <button onclick="searchProducts(true)" 
+                        class="absolute left-3 top-3 bottom-3 bg-orange-600 text-white px-10 rounded-xl hover:bg-orange-500 transition-all font-black text-lg shadow-lg">
+                    חפש
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-12 px-4">
+        <div id="loader" class="hidden text-center py-32">
+            <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-600"></div>
+            <p class="mt-6 text-gray-500 font-bold text-xl animate-pulse">מושך נתונים מעליאקספרס...</p>
+        </div>
+
+        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            </div>
+
+        <div id="pagination" class="hidden text-center mt-20">
+            <button id="loadMoreBtn" onclick="searchProducts(false)" 
+                    class="bg-white border-2 border-orange-600 text-orange-600 px-12 py-4 rounded-2xl font-black hover:bg-orange-600 hover:text-white transition-all shadow-md">
+                הצג תוצאות נוספות <i class="fa-solid fa-plus mr-2"></i>
+            </button>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-100 py-10 mt-20 text-center">
+        <div class="container mx-auto px-4">
+            <div class="text-orange-600 font-black text-xl mb-4">ALI-BOT</div>
+            <p class="text-gray-400 text-sm">המערכת סורקת מוצרים בעלי דירוג גבוה בלבד. הרכישה מתבצעת באתר עליאקספרס.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentPage = 1;
+        let currentQuery = "";
+
+        async function searchProducts(isNewSearch) {
+            const input = document.getElementById('searchInput').value.trim();
+            if (!input) return;
+
+            if (isNewSearch) {
+                currentPage = 1;
+                currentQuery = input;
+                document.getElementById('results').innerHTML = "";
+                document.getElementById('pagination').classList.add('hidden');
+            } else {
+                currentPage++;
+            }
+
+            document.getElementById('loader').classList.remove('hidden');
+
+            try {
+                // פונה ישירות לאותו שרת
+                const url = `/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+                const response = await fetch(url);
+                const products = await response.json();
+                
+                document.getElementById('loader').classList.add('hidden');
+
+                if (response.status !== 200 || !products || products.length === 0) {
+                    if (isNewSearch) {
+                        const errorMsg = products.error ? products.error : `לא מצאנו תוצאות למילה "${currentQuery}"`;
+                        document.getElementById('results').innerHTML = `
+                            <div class="col-span-full text-center py-20">
+                                <i class="fa-solid fa-magnifying-glass text-5xl text-gray-200 mb-4"></i>
+                                <p class="text-gray-500 text-xl font-bold">${errorMsg}</p>
+                            </div>`;
+                    }
+                    return;
+                }
+
+                renderItems(products);
+                document.getElementById('pagination').classList.remove('hidden');
+            } catch (e) {
+                document.getElementById('loader').classList.add('hidden');
+                alert("יש שגיאה בחיבור לשרת.");
+            }
+        }
+
+        function renderItems(products) {
+            const grid = document.getElementById('results');
+            products.forEach(p => {
+                const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
+                const card = `
+                    <div class="product-card bg-white rounded-3xl p-4 border border-gray-50 flex flex-col shadow-sm">
+                        <div class="relative mb-4">
+                            <img src="${p.product_main_image_url}" class="w-full h-48 object-cover rounded-2xl">
+                            <div class="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-1 rounded-md backdrop-blur-sm">
+                                ${p.sale_volume || '0'}+ נמכרו
+                            </div>
+                        </div>
+                        <h3 class="text-gray-700 font-bold text-xs mb-3 line-clamp-2 h-8 leading-tight">${p.product_title}</h3>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="text-xl font-black text-orange-600">₪${price}</div>
+                            <a href="${p.promotion_link}" target="_blank" class="bg-gray-900 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-orange-600 transition-colors">
+                                <i class="fa-solid fa-cart-shopping text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function loginWithGoogle() {
+            alert("המערכת מתחברת ל-Firebase... כבר מעדכן אותך!");
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') searchProducts(true);
+        });
+    </script>
+</body>
+</html>
