@@ -21,43 +21,46 @@
                 <div id="logo" class="text-2xl font-black text-orange-600 tracking-tighter">ALI-BOT</div>
                 <ul class="hidden md:flex gap-6 text-gray-600 font-bold text-sm">
                     <li><a href="#" class="hover:text-orange-600 transition">ראשי</a></li>
-                    <li><a href="#" id="admin-link" class="hidden text-red-500 border-r pr-4">פאנל ניהול</a></li>
                 </ul>
-            </div>
-            <div id="auth-section">
-                <button onclick="loginWithGoogle()" class="bg-gray-50 border border-gray-200 px-5 py-2 rounded-full flex items-center gap-2 hover:bg-white hover:shadow-sm transition text-sm font-bold">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16">
-                    <span>התחבר עם גוגל</span>
-                </button>
             </div>
         </div>
     </nav>
 
-    <header class="bg-[#1a1a1a] py-20 px-4 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+    <header class="bg-[#1a1a1a] py-16 px-4 relative overflow-hidden">
         <div class="max-w-3xl mx-auto text-center relative z-10">
             <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4">הדילים הכי חזקים בעליאקספרס</h1>
-            <p class="text-orange-400 text-lg mb-8 font-medium">חיפוש חכם מהנמכרים ביותר בלבד 🔥</p>
+            <p class="text-orange-400 text-lg mb-8 font-medium">חיפוש חכם עם סינון זבל 🔥</p>
             
-            <div class="relative group">
-                <input type="text" id="searchInput" placeholder="מה בא לך למצוא? (למשל: רמקול, מטען, גיימינג)" 
-                       class="w-full p-6 rounded-2xl shadow-2xl outline-none text-xl pr-8 pl-24 border-4 border-transparent focus:border-orange-500 transition-all">
+            <div class="relative group mb-4">
+                <input type="text" id="searchInput" placeholder="מה בא לך למצוא? (למשל: שעון חכם, רמקול)" 
+                       class="w-full p-6 rounded-2xl shadow-xl outline-none text-xl pr-8 pl-24 border-4 border-transparent focus:border-orange-500 transition-all">
                 <button onclick="searchProducts(true)" 
                         class="absolute left-3 top-3 bottom-3 bg-orange-600 text-white px-10 rounded-xl hover:bg-orange-500 transition-all font-black text-lg shadow-lg">
                     חפש
                 </button>
             </div>
+
+            <div class="flex justify-center gap-4 mt-4">
+                <div class="bg-white/10 p-2 rounded-xl flex items-center gap-2">
+                    <span class="text-white text-sm">ממחיר:</span>
+                    <input type="number" id="minPrice" placeholder="₪ 0" class="w-20 p-2 rounded-lg text-center font-bold text-gray-800 outline-none">
+                </div>
+                <div class="bg-white/10 p-2 rounded-xl flex items-center gap-2">
+                    <span class="text-white text-sm">עד מחיר:</span>
+                    <input type="number" id="maxPrice" placeholder="₪ ללא הגבלה" class="w-28 p-2 rounded-lg text-center font-bold text-gray-800 outline-none">
+                </div>
+            </div>
+
         </div>
     </header>
 
     <main class="container mx-auto py-12 px-4">
         <div id="loader" class="hidden text-center py-32">
             <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-600"></div>
-            <p class="mt-6 text-gray-500 font-bold text-xl animate-pulse">מושך נתונים מעליאקספרס...</p>
+            <p class="mt-6 text-gray-500 font-bold text-xl animate-pulse">מחפש מוצרים מעולים...</p>
         </div>
 
-        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            </div>
+        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
 
         <div id="pagination" class="hidden text-center mt-20">
             <button id="loadMoreBtn" onclick="searchProducts(false)" 
@@ -67,16 +70,11 @@
         </div>
     </main>
 
-    <footer class="bg-white border-t border-gray-100 py-10 mt-20 text-center">
-        <div class="container mx-auto px-4">
-            <div class="text-orange-600 font-black text-xl mb-4">ALI-BOT</div>
-            <p class="text-gray-400 text-sm">המערכת סורקת מוצרים בעלי דירוג גבוה בלבד. הרכישה מתבצעת באתר עליאקספרס.</p>
-        </div>
-    </footer>
-
     <script>
         let currentPage = 1;
         let currentQuery = "";
+        let currentMin = "";
+        let currentMax = "";
 
         async function searchProducts(isNewSearch) {
             const input = document.getElementById('searchInput').value.trim();
@@ -85,6 +83,10 @@
             if (isNewSearch) {
                 currentPage = 1;
                 currentQuery = input;
+                // לוקח את המחירים שהמשתמש הקליד
+                currentMin = document.getElementById('minPrice').value;
+                currentMax = document.getElementById('maxPrice').value;
+                
                 document.getElementById('results').innerHTML = "";
                 document.getElementById('pagination').classList.add('hidden');
             } else {
@@ -94,8 +96,11 @@
             document.getElementById('loader').classList.remove('hidden');
 
             try {
-                // פונה ישירות לאותו שרת
-                const url = `/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+                // שולח את הבקשה עם המחירים!
+                let url = `/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+                if (currentMin) url += `&min=${currentMin}`;
+                if (currentMax) url += `&max=${currentMax}`;
+
                 const response = await fetch(url);
                 const products = await response.json();
                 
@@ -103,7 +108,7 @@
 
                 if (response.status !== 200 || !products || products.length === 0) {
                     if (isNewSearch) {
-                        const errorMsg = products.error ? products.error : `לא מצאנו תוצאות למילה "${currentQuery}"`;
+                        const errorMsg = products.error ? products.error : `לא מצאנו תוצאות למילה "${currentQuery}" בטווח המחירים הזה.`;
                         document.getElementById('results').innerHTML = `
                             <div class="col-span-full text-center py-20">
                                 <i class="fa-solid fa-magnifying-glass text-5xl text-gray-200 mb-4"></i>
@@ -144,10 +149,6 @@
                 `;
                 grid.innerHTML += card;
             });
-        }
-
-        function loginWithGoogle() {
-            alert("המערכת מתחברת ל-Firebase... כבר מעדכן אותך!");
         }
 
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
