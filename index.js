@@ -29,7 +29,6 @@ app.get('/api/search', async (req, res) => {
   try {
     const originalQuery = req.query.q;
     const page = req.query.page || "1";
-    // קולט את המחירים מהאתר
     const minPrice = req.query.min || ""; 
     const maxPrice = req.query.max || "";
 
@@ -47,6 +46,7 @@ app.get('/api/search', async (req, res) => {
       return res.status(500).json({ error: "חסרים משתני סביבה בשרת" });
     }
 
+    // הבקשה לעליאקספרס: תביאו 50 מוצרים, אנחנו נסנן את המחיר לבד!
     const params = {
       app_key: appKey,
       method: "aliexpress.affiliate.product.query",
@@ -56,15 +56,12 @@ app.get('/api/search', async (req, res) => {
       sign_method: "md5",
       keywords: translatedQuery,
       page_no: page,
+      page_size: "50", // משיכת כמות גדולה של מוצרים כדי שיהיה מה לסנן
       tracking_id: trackingId,
       ship_to_country: "IL",
       target_currency: "ILS",
       target_language: "HE"
     };
-
-    // אם הלקוח הזין מחיר מינימום/מקסימום, נצרף את זה לבקשה של עליאקספרס
-    if (minPrice) params.min_sale_price = minPrice;
-    if (maxPrice) params.max_sale_price = maxPrice;
 
     params.sign = generateSign(params, appSecret);
 
@@ -80,6 +77,21 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
 
+    // --- מערכת הסלקטור העצמאית שלנו ---
+    if (minPrice || maxPrice) {
+      products = products.filter(p => {
+        // מזהים את המחיר המדויק (לפעמים מגיע כטווח, אז ניקח את המספר הראשון)
+        const priceStr = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
+        const itemPrice = parseFloat(priceStr);
+        
+        const min = minPrice ? parseFloat(minPrice) : 0;
+        const max = maxPrice ? parseFloat(maxPrice) : Infinity;
+        
+        return itemPrice >= min && itemPrice <= max;
+      });
+    }
+
+    // אחרי שניקינו את כל הזבל, נחתוך ל-10 המוצרים הטובים ביותר ונחזיר
     products = products.slice(0, 10);
     res.json(products);
 
