@@ -6,13 +6,14 @@ const path = require('path');
 const app = express();
 app.use(cors());
 
-// אומר לשרת להציג את קבצי האתר המעוצב מהתיקייה public
 app.use(express.static(path.join(__dirname, 'public')));
 
 const port = process.env.PORT || 8000;
 
-// נתיב ה-API שלנו לחיפוש מעליאקספרס
 app.get('/api/search', async (req, res) => {
+  // הפקודה הזו מונעת מהשרת "להיתקע" על אותן תוצאות (מונעת Cache)
+  res.setHeader('Cache-Control', 'no-store');
+  
   try {
     const query = req.query.q;
     const page = req.query.page || "1";
@@ -26,7 +27,7 @@ app.get('/api/search', async (req, res) => {
     const trackingId = process.env.ALI_TRACKING_ID;
 
     if (!appKey || !appSecret || !trackingId) {
-      return res.status(500).json({ error: "חסרים משתני סביבה בשרת (App Key / Secret / Tracking ID)" });
+      return res.status(500).json({ error: "חסרים משתני סביבה בשרת" });
     }
 
     const params = {
@@ -41,8 +42,8 @@ app.get('/api/search', async (req, res) => {
       tracking_id: trackingId,
       ship_to_country: "IL",
       target_currency: "ILS",
-      target_language: "HE",
-      sort: "LAST_VOLUME_DESC"
+      target_language: "HE"
+      // הערה: מחקנו מכאן את פקודת המיון כדי שהמערכת תתמקד אך ורק במילת החיפוש!
     };
 
     params.sign = generateSign(params, appSecret);
@@ -55,7 +56,6 @@ app.get('/api/search', async (req, res) => {
     
     let products = data?.aliexpress_affiliate_product_query_response?.resp_result?.result?.products?.product || [];
     
-    // הצגת שגיאה מעליאקספרס אם יש כזו
     if (products.length === 0 && data?.error_response) {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
