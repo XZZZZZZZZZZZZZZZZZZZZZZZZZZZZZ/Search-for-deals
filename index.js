@@ -10,17 +10,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const port = process.env.PORT || 8000;
 
+async function translateToEnglish(text) {
+  try {
+    if (!/[\u0590-\u05FF]/.test(text)) return text;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=iw&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data[0][0][0];
+  } catch (error) {
+    console.error("שגיאת תרגום:", error);
+    return text;
+  }
+}
+
 app.get('/api/search', async (req, res) => {
-  // הפקודה הזו מונעת מהשרת "להיתקע" על אותן תוצאות (מונעת Cache)
   res.setHeader('Cache-Control', 'no-store');
   
   try {
-    const query = req.query.q;
+    const originalQuery = req.query.q;
     const page = req.query.page || "1";
+    // קולט את המחירים מהאתר
+    const minPrice = req.query.min || ""; 
+    const maxPrice = req.query.max || "";
 
-    if (!query) {
+    if (!originalQuery) {
       return res.status(400).json({ error: "אנא הזן מילת חיפוש" });
     }
+
+    const translatedQuery = await translateToEnglish(originalQuery);
 
     const appKey = process.env.ALI_APP_KEY;
     const appSecret = process.env.ALI_APP_SECRET;
@@ -37,14 +54,17 @@ app.get('/api/search', async (req, res) => {
       format: "json",
       v: "2.0",
       sign_method: "md5",
-      keywords: query,
+      keywords: translatedQuery,
       page_no: page,
       tracking_id: trackingId,
       ship_to_country: "IL",
       target_currency: "ILS",
       target_language: "HE"
-      // הערה: מחקנו מכאן את פקודת המיון כדי שהמערכת תתמקד אך ורק במילת החיפוש!
     };
+
+    // אם הלקוח הזין מחיר מינימום/מקסימום, נצרף את זה לבקשה של עליאקספרס
+    if (minPrice) params.min_sale_price = minPrice;
+    if (maxPrice) params.max_sale_price = maxPrice;
 
     params.sign = generateSign(params, appSecret);
 
@@ -60,7 +80,6 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
 
-    // חותך ל-10 מוצרים ומחזיר
     products = products.slice(0, 10);
     res.json(products);
 
