@@ -136,7 +136,6 @@
         window.isLoggedIn = false;
         window.pendingProductLink = "";
 
-        // מאזין למצב התחברות
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.isLoggedIn = true;
@@ -148,7 +147,6 @@
             }
         });
 
-        // התחברות בפועל עם גוגל
         window.handleGoogleLogin = async function() {
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -160,7 +158,7 @@
                     window.pendingProductLink = "";
                 }
             } catch (error) {
-                console.error("שגיאת התחברות", error);
+                console.error("שגיאת התחברות:", error);
                 alert("ההתחברות נכשלה, אנא נסו שוב.");
             }
         };
@@ -255,7 +253,6 @@
         window.toggleAdminPanel = function() { document.getElementById('adminPanel').classList.toggle('hidden'); };
         window.closePopup = function() { document.getElementById('popupModal').classList.add('hidden'); };
         
-        // מקשים
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if(e.key === 'Enter') window.searchProducts(true);
         });
