@@ -46,7 +46,6 @@ app.get('/api/search', async (req, res) => {
       return res.status(500).json({ error: "חסרים משתני סביבה בשרת" });
     }
 
-    // הבקשה לעליאקספרס: תביאו 50 מוצרים, אנחנו נסנן את המחיר לבד!
     const params = {
       app_key: appKey,
       method: "aliexpress.affiliate.product.query",
@@ -56,7 +55,7 @@ app.get('/api/search', async (req, res) => {
       sign_method: "md5",
       keywords: translatedQuery,
       page_no: page,
-      page_size: "50", // משיכת כמות גדולה של מוצרים כדי שיהיה מה לסנן
+      page_size: "50", // מביא הרבה מוצרים כדי שיהיה מה לסנן
       tracking_id: trackingId,
       ship_to_country: "IL",
       target_currency: "ILS",
@@ -77,21 +76,35 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
 
-    // --- מערכת הסלקטור העצמאית שלנו ---
-    if (minPrice || maxPrice) {
-      products = products.filter(p => {
-        // מזהים את המחיר המדויק (לפעמים מגיע כטווח, אז ניקח את המספר הראשון)
-        const priceStr = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
-        const itemPrice = parseFloat(priceStr);
-        
-        const min = minPrice ? parseFloat(minPrice) : 0;
-        const max = maxPrice ? parseFloat(maxPrice) : Infinity;
-        
-        return itemPrice >= min && itemPrice <= max;
-      });
-    }
+    // --- מערכת הסלקטור המשודרגת (מחיר + איכות + רשימה שחורה) ---
+    
+    // רשימה שחורה: אתה יכול להוסיף לכאן כל מילה שתרצה (בתוך מרכאות עם פסיק ביניהן)
+    const blackList = [
+      "strap", "case", "cable", "screen protector", "cover", "silicone",
+      "רצועה", "מגן", "כבל", "כיסוי"
+    ];
 
-    // אחרי שניקינו את כל הזבל, נחתוך ל-10 המוצרים הטובים ביותר ונחזיר
+    products = products.filter(p => {
+      // 1. סינון מחיר
+      const priceStr = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
+      const itemPrice = parseFloat(priceStr);
+      const min = minPrice ? parseFloat(minPrice) : 0;
+      const max = maxPrice ? parseFloat(maxPrice) : Infinity;
+      const isValidPrice = itemPrice >= min && itemPrice <= max;
+
+      // 2. סינון דירוג: משאיר רק מוצרים עם 4 כוכבים ומעלה (או מוצרים חדשים עם דירוג 0)
+      const rating = parseFloat(p.evaluate_rate || "0");
+      const isValidRating = rating >= 4.0 || rating === 0;
+
+      // 3. סינון רשימה שחורה
+      const titleLower = (p.product_title || "").toLowerCase();
+      const hasBlacklistWord = blackList.some(word => titleLower.includes(word.toLowerCase()));
+
+      // המוצר שורד רק אם הוא עומד בכל התנאים
+      return isValidPrice && isValidRating && !hasBlacklistWord;
+    });
+
+    // חותך ל-10 התוצאות הכי טובות ושולח לאתר
     products = products.slice(0, 10);
     res.json(products);
 
