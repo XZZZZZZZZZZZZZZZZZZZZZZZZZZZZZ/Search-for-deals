@@ -3,90 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ali-Bot | מנוע הדילים החכם</title>
+    <title>המציאות שפשוט חבל לפספס</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&display=swap');
-        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
-        .product-card { transition: all 0.3s ease; }
-        .product-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;800&display=swap');
+        body { font-family: 'Assistant', sans-serif; background-color: #ffffff; }
+        .product-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
     </style>
 </head>
-<body>
+<body class="text-gray-900 bg-white min-h-screen flex flex-col">
 
-    <nav class="bg-white shadow-sm p-4 sticky top-0 z-50 border-b border-gray-100">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-6">
-                <div id="logo" class="text-2xl font-black text-orange-600 tracking-tighter">ALI-BOT</div>
-                <ul class="hidden md:flex gap-6 text-gray-600 font-bold text-sm">
-                    <li><a href="#" class="hover:text-orange-600 transition">ראשי</a></li>
-                </ul>
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div id="siteLogo" class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                    המציאות שפשוט חבל לפספס
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="adminBtn" onclick="toggleAdminPanel()" class="text-xs text-gray-400 hover:text-gray-900 font-medium transition">
+                    <i class="fa-solid fa-lock-open ml-1"></i> ניהול
+                </button>
+                <div id="userStatus" class="text-sm font-semibold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                    <i class="fa-solid fa-user ml-1 text-gray-400"></i> אורח
+                </div>
             </div>
         </div>
     </nav>
 
-    <header class="bg-[#1a1a1a] py-16 px-4 relative overflow-hidden">
-        <div class="max-w-3xl mx-auto text-center relative z-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4">הדילים הכי חזקים בעליאקספרס</h1>
-            <p class="text-orange-400 text-lg mb-8 font-medium">חיפוש חכם עם סינון זבל 🔥</p>
-            
-            <div class="relative group mb-4">
-                <input type="text" id="searchInput" placeholder="מה בא לך למצוא? (למשל: שעון חכם, רמקול)" 
-                       class="w-full p-6 rounded-2xl shadow-xl outline-none text-xl pr-8 pl-24 border-4 border-transparent focus:border-orange-500 transition-all">
-                <button onclick="searchProducts(true)" 
-                        class="absolute left-3 top-3 bottom-3 bg-orange-600 text-white px-10 rounded-xl hover:bg-orange-500 transition-all font-black text-lg shadow-lg">
-                    חפש
+    <main class="flex-grow max-w-5xl mx-auto w-full px-6 pt-16 pb-24">
+        <div class="text-center mb-12 animate-fade-in">
+            <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3">חפשו את הדיל שלכם</h1>
+            <p class="text-gray-500 text-base max-w-md mx-auto">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
+        </div>
+
+        <div class="max-w-2xl mx-auto mb-16">
+            <div class="flex flex-col md:flex-row gap-3 bg-white p-2 rounded-2xl border border-gray-200/80 shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
+                <div class="flex-grow flex items-center pr-3 gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="רשמו מוצר לחיפוש..." 
+                           class="w-full p-3 bg-transparent outline-none text-lg text-gray-800">
+                </div>
+                <div class="flex items-center gap-2 px-2 border-r border-gray-100">
+                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מחיר מ-</span>
+                    <input type="number" id="minPrice" placeholder="₪0" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-gray-50 outline-none border border-transparent focus:border-gray-300 text-sm">
+                </div>
+                <button onclick="searchProducts(true)" class="bg-gray-900 text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition font-bold shadow-sm active:scale-95 text-base">
+                    חפש דילים
                 </button>
             </div>
-
-            <div class="flex justify-center gap-4 mt-4">
-                <div class="bg-white/10 p-2 rounded-xl flex items-center gap-2">
-                    <span class="text-white text-sm">ממחיר:</span>
-                    <input type="number" id="minPrice" placeholder="₪ 0" class="w-20 p-2 rounded-lg text-center font-bold text-gray-800 outline-none">
-                </div>
-                <div class="bg-white/10 p-2 rounded-xl flex items-center gap-2">
-                    <span class="text-white text-sm">עד מחיר:</span>
-                    <input type="number" id="maxPrice" placeholder="₪ ללא הגבלה" class="w-28 p-2 rounded-lg text-center font-bold text-gray-800 outline-none">
-                </div>
-            </div>
-
-        </div>
-    </header>
-
-    <main class="container mx-auto py-12 px-4">
-        <div id="loader" class="hidden text-center py-32">
-            <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-600"></div>
-            <p class="mt-6 text-gray-500 font-bold text-xl animate-pulse">מחפש מוצרים מעולים...</p>
+            <div id="filterMessage" class="hidden text-center mt-4 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl inline-block mx-auto w-full"></div>
         </div>
 
-        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+        <div id="loader" class="hidden text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
+            <p class="mt-4 text-gray-400 text-sm font-medium">שולף את התוצאות הכי טובות...</p>
+        </div>
 
-        <div id="pagination" class="hidden text-center mt-20">
-            <button id="loadMoreBtn" onclick="searchProducts(false)" 
-                    class="bg-white border-2 border-orange-600 text-orange-600 px-12 py-4 rounded-2xl font-black hover:bg-orange-600 hover:text-white transition-all shadow-md">
-                הצג תוצאות נוספות <i class="fa-solid fa-plus mr-2"></i>
+        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+        <div id="pagination" class="hidden text-center mt-16">
+            <button id="loadMoreBtn" onclick="searchProducts(false)" class="bg-white border border-gray-200 text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm text-sm">
+                הצג תוצאות נוספות
             </button>
         </div>
     </main>
+
+    <div id="popupModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 text-center relative">
+            <button onclick="closePopup()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-800"><i class="fa-solid fa-bell text-xl"></i></div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2" id="popupTitle">הודעת מערכת</h3>
+            <p class="text-gray-600 text-sm leading-relaxed mb-6" id="popupText">ברוכים הבאים לאתר הדילים שלנו!</p>
+            <button onclick="closePopup()" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition">הבנתי, תודה</button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center">
+            <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-100 text-gray-900">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-black text-gray-950 mb-2">חשיפת הקישור החסוי</h3>
+            <p class="text-gray-500 text-sm mb-8 leading-relaxed">כדי לעבור לעמוד המוצר בעליאקספרס ולקבל את מחיר ההנחה, יש להזדהות בקליק קצר עם גוגל.</p>
+            <button onclick="mockGoogleLogin()" class="w-full bg-white border border-gray-300 text-gray-700 py-3.5 px-4 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-3 shadow-sm active:scale-98">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.41 3.66 1.48 7.56l3.8 2.94C6.23 7.39 8.89 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.28 1.48-1.12 2.74-2.38 3.58l3.7 2.87c2.16-1.99 3.41-4.92 3.41-8.6z"/><path fill="#FBBC05" d="M5.28 14.51c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.48 7.56C.54 9.47 0 11.62 0 13.9s.54 4.43 1.48 6.34l3.8-2.93z"/><path fill="#34A353" d="M12 23c3.24 0 5.97-1.08 7.96-2.91l-3.7-2.87c-1.03.69-2.34 1.1-4.26 1.1-3.11 0-5.77-2.35-6.72-5.46l-3.8 2.93C3.41 20.34 7.35 23 12 23z"/></svg>
+                התחברות מהירה עם Google
+            </button>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="hidden fixed inset-y-0 left-0 w-80 bg-gray-900 text-white z-50 p-6 shadow-2xl flex flex-col border-r border-gray-800">
+        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-sliders"></i> פאנל מנהל מערכת</h3>
+            <button onclick="toggleAdminPanel()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="flex-grow space-y-6">
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-800">
+                <span class="text-xs text-gray-400 block mb-1">משתמשים רשומים באתר</span>
+                <span id="adminUserCount" class="text-3xl font-black text-white">0</span>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400 font-bold block">כתובת לוגו / שם האתר:</label>
+                <input type="text" id="logoInput" class="w-full p-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-gray-500">
+                <button onclick="updateLogo()" class="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-xs font-bold transition">עדכן שם/לוגו</button>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400 font-bold block">טקסט לפופ-אפ הודעות:</label>
+                <textarea id="popupInput" rows="3" class="w-full p-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-gray-500 resize-none" placeholder="הזן טקסט שיקפוץ לגולשים..."></textarea>
+                <button onclick="updatePopupText()" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg text-xs font-bold transition">שמור והפעל פופ-אפ</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let currentPage = 1;
         let currentQuery = "";
         let currentMin = "";
-        let currentMax = "";
+        let isLoggedIn = false; // בקרת כניסה
+        let pendingProductLink = ""; // זוכר לאן הגולש רצה ללכת
+
+        // בדיקה ראשונית אם יש פופאפ מוגדר במערכת
+        window.onload = function() {
+            // טעינת הגדרות ראשוניות (מדומה כרגע עד שנחבר DB)
+            document.getElementById('adminUserCount').innerText = "142"; // מדומה
+        };
 
         async function searchProducts(isNewSearch) {
             const input = document.getElementById('searchInput').value.trim();
             if (!input) return;
 
+            document.getElementById('filterMessage').classList.add('hidden');
+
             if (isNewSearch) {
                 currentPage = 1;
                 currentQuery = input;
-                // לוקח את המחירים שהמשתמש הקליד
                 currentMin = document.getElementById('minPrice').value;
-                currentMax = document.getElementById('maxPrice').value;
-                
                 document.getElementById('results').innerHTML = "";
                 document.getElementById('pagination').classList.add('hidden');
             } else {
@@ -96,23 +150,31 @@
             document.getElementById('loader').classList.remove('hidden');
 
             try {
-                // שולח את הבקשה עם המחירים!
                 let url = `/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
                 if (currentMin) url += `&min=${currentMin}`;
-                if (currentMax) url += `&max=${currentMax}`;
 
                 const response = await fetch(url);
                 const products = await response.json();
                 
                 document.getElementById('loader').classList.add('hidden');
 
-                if (response.status !== 200 || !products || products.length === 0) {
+                if (response.status !== 200) {
+                    // הצגת שגיאת סינון מותאמת אישית אם החיפוש נחסם
+                    if(products.error === "החיפוש שלכם לא תואם את הגדרות הסינון") {
+                        document.getElementById('filterMessage').innerText = products.error;
+                        document.getElementById('filterMessage').classList.remove('hidden');
+                    } else {
+                        alert(products.error || "שגיאה בטעינת פריטים");
+                    }
+                    return;
+                }
+
+                if (!products || products.length === 0) {
                     if (isNewSearch) {
-                        const errorMsg = products.error ? products.error : `לא מצאנו תוצאות למילה "${currentQuery}" בטווח המחירים הזה.`;
                         document.getElementById('results').innerHTML = `
-                            <div class="col-span-full text-center py-20">
-                                <i class="fa-solid fa-magnifying-glass text-5xl text-gray-200 mb-4"></i>
-                                <p class="text-gray-500 text-xl font-bold">${errorMsg}</p>
+                            <div class="col-span-full text-center py-16">
+                                <i class="fa-solid fa-box-open text-3xl text-gray-200 mb-2"></i>
+                                <p class="text-gray-400 text-sm">לא נמצאו תוצאות מתאימות בטווח הזה.</p>
                             </div>`;
                     }
                     return;
@@ -122,7 +184,7 @@
                 document.getElementById('pagination').classList.remove('hidden');
             } catch (e) {
                 document.getElementById('loader').classList.add('hidden');
-                alert("יש שגיאה בחיבור לשרת.");
+                alert("שגיאה בתקשורת עם השרת.");
             }
         }
 
@@ -131,24 +193,64 @@
             products.forEach(p => {
                 const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
                 const card = `
-                    <div class="product-card bg-white rounded-3xl p-4 border border-gray-50 flex flex-col shadow-sm">
-                        <div class="relative mb-4">
-                            <img src="${p.product_main_image_url}" class="w-full h-48 object-cover rounded-2xl">
-                            <div class="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-1 rounded-md backdrop-blur-sm">
-                                ${p.sale_volume || '0'}+ נמכרו
-                            </div>
+                    <div class="product-card bg-white rounded-2xl p-4 border border-gray-100 flex flex-col">
+                        <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
+                            <img src="${p.product_main_image_url}" class="w-full h-44 object-cover">
                         </div>
-                        <h3 class="text-gray-700 font-bold text-xs mb-3 line-clamp-2 h-8 leading-tight">${p.product_title}</h3>
-                        <div class="flex items-center justify-between mt-auto">
-                            <div class="text-xl font-black text-orange-600">₪${price}</div>
-                            <a href="${p.promotion_link}" target="_blank" class="bg-gray-900 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-orange-600 transition-colors">
-                                <i class="fa-solid fa-cart-shopping text-sm"></i>
-                            </a>
+                        <h3 class="text-gray-800 font-semibold text-xs mb-3 line-clamp-2 h-8 leading-tight">${p.product_title}</h3>
+                        <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+                            <div class="text-lg font-extrabold text-gray-900">₪${price}</div>
+                            <button onclick="handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
+                                לצפייה בדיל
+                            </button>
                         </div>
                     </div>
                 `;
                 grid.innerHTML += card;
             });
+        }
+
+        // ניהול קליק על מוצר - בדיקה אם מחובר
+        function handleProductClick(link) {
+            if (isLoggedIn) {
+                window.open(link, '_blank');
+            } else {
+                pendingProductLink = link;
+                document.getElementById('loginModal').classList.remove('hidden');
+            }
+        }
+
+        // התחברות מדומה עם גוגל (כאן נחבר בהמשך את הקוד האמיתי)
+        function mockGoogleLogin() {
+            isLoggedIn = true;
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('userStatus').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 ml-1"></i> מחובר`;
+            if (pendingProductLink) {
+                window.open(pendingProductLink, '_blank');
+                pendingProductLink = "";
+            }
+        }
+
+        // פונקציות ניהול ופופאפים
+        function toggleAdminPanel() {
+            document.getElementById('adminPanel').classList.toggle('hidden');
+        }
+
+        function updateLogo() {
+            const val = document.getElementById('logoInput').value.trim();
+            if(val) document.getElementById('siteLogo').innerText = val;
+        }
+
+        function updatePopupText() {
+            const val = document.getElementById('popupInput').value.trim();
+            if(val) {
+                document.getElementById('popupText').innerText = val;
+                document.getElementById('popupModal').classList.remove('hidden');
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popupModal').classList.add('hidden');
         }
 
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
