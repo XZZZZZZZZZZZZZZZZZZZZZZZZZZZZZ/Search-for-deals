@@ -8,80 +8,80 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;800&display=swap');
-        body { font-family: 'Assistant', sans-serif; background-color: #ffffff; }
+        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
         .product-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
+        /* מרווח תחתון כדי שהחיפוש לא יסתיר מוצרים */
+        main { padding-bottom: 120px; } 
     </style>
 </head>
-<body class="text-gray-900 bg-white min-h-screen flex flex-col">
+<body class="text-gray-900 min-h-screen flex flex-col">
 
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 px-6 py-4">
+    <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div id="siteLogo" class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <div id="siteLogoDisplay" class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                     המציאות שפשוט חבל לפספס
                 </div>
             </div>
             <div class="flex items-center gap-4">
-                <button onclick="window.toggleAdminPanel()" class="text-xs text-gray-400 hover:text-gray-900 font-medium transition">
-                    <i class="fa-solid fa-lock-open ml-1"></i> ניהול
+                <button id="adminBtn" onclick="window.toggleAdminPanel()" class="hidden text-xs text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition shadow-sm">
+                    <i class="fa-solid fa-sliders ml-1"></i> ניהול
                 </button>
-                <div id="userStatus" class="text-sm font-semibold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                    <i class="fa-solid fa-user ml-1 text-gray-400"></i> אורח
+                
+                <div id="userAuthArea">
+                    <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2">
+                        <i class="fa-brands fa-google text-blue-500"></i> התחבר
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow max-w-5xl mx-auto w-full px-6 pt-16 pb-24">
-        <div class="text-center mb-12 animate-fade-in">
-            <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3">חפשו את הדיל שלכם</h1>
-            <p class="text-gray-500 text-base max-w-md mx-auto">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 pt-8">
+        
+        <div class="text-center mb-8 animate-fade-in" id="welcomeSection">
+            <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3" id="siteTitleDisplay">חפשו את הדיל שלכם</h1>
+            <p class="text-gray-500 text-base max-w-md mx-auto" id="siteDescDisplay">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
         </div>
 
-        <div class="max-w-2xl mx-auto mb-16">
-            <div class="flex flex-col md:flex-row gap-3 bg-white p-2 rounded-2xl border border-gray-200/80 shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
-                <div class="flex-grow flex items-center pr-3 gap-2">
-                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-                    <input type="text" id="searchInput" placeholder="רשמו מוצר לחיפוש..." class="w-full p-3 bg-transparent outline-none text-lg text-gray-800">
-                </div>
-                <div class="flex items-center gap-2 px-2 border-r border-gray-100">
-                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מחיר מ-</span>
-                    <input type="number" id="minPrice" placeholder="₪0" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-gray-50 outline-none border border-transparent focus:border-gray-300 text-sm">
-                </div>
-                <button onclick="window.searchProducts(true)" class="bg-gray-900 text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition font-bold shadow-sm active:scale-95 text-base">
-                    חפש דילים
-                </button>
-            </div>
-            <div id="filterMessage" class="hidden text-center mt-4 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl inline-block mx-auto w-full"></div>
-        </div>
+        <div id="filterMessage" class="hidden text-center mb-6 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl max-w-2xl mx-auto"></div>
 
         <div id="loader" class="hidden text-center py-20">
             <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
             <p class="mt-4 text-gray-400 text-sm font-medium">שולף את התוצאות הכי טובות...</p>
         </div>
 
-        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        <div id="results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
 
-        <div id="pagination" class="hidden text-center mt-16">
+        <div id="pagination" class="hidden text-center mt-12 mb-8">
             <button onclick="window.searchProducts(false)" class="bg-white border border-gray-200 text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm text-sm">
                 הצג תוצאות נוספות
             </button>
         </div>
     </main>
 
-    <div id="popupModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 text-center relative">
-            <button onclick="window.closePopup()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-800"><i class="fa-solid fa-bell text-xl"></i></div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2" id="popupTitle">הודעת מערכת</h3>
-            <p class="text-gray-600 text-sm leading-relaxed mb-6" id="popupText">ברוכים הבאים לאתר הדילים שלנו!</p>
-            <button onclick="window.closePopup()" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition">הבנתי, תודה</button>
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] p-4 z-30">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex flex-col sm:flex-row gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:bg-white transition-all">
+                <div class="flex-grow flex items-center pr-3 gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="רשמו מוצר לחיפוש..." class="w-full p-2 bg-transparent outline-none text-base sm:text-lg text-gray-800">
+                </div>
+                <div class="flex items-center gap-2 px-2 border-r border-gray-200">
+                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מינימום ₪</span>
+                    <input type="number" id="minPrice" placeholder="0" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
+                </div>
+                <button onclick="window.searchProducts(true)" class="bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition font-bold shadow-sm active:scale-95 whitespace-nowrap">
+                    חפש דילים
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="loginModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center relative">
+            <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-100 text-gray-900">
                 <i class="fa-solid fa-shield-halved text-2xl"></i>
             </div>
@@ -94,27 +94,51 @@
         </div>
     </div>
 
-    <div id="adminPanel" class="hidden fixed inset-y-0 left-0 w-80 bg-gray-900 text-white z-50 p-6 shadow-2xl flex flex-col border-r border-gray-800">
-        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+    <div id="adminPanel" class="hidden fixed inset-y-0 left-0 w-80 bg-gray-900 text-white z-50 p-6 shadow-2xl flex flex-col border-r border-gray-800 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
             <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-sliders"></i> פאנל מנהל</h3>
             <button onclick="window.toggleAdminPanel()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
+        
         <div class="flex-grow space-y-6">
-            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-800">
-                <span class="text-xs text-gray-400 block mb-1">משתמשים רשומים באתר</span>
-                <span id="adminUserCount" class="text-3xl font-black text-white">0</span>
+            
+            <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
+                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> הרשאות ניהול</h4>
+                <div id="adminListDisplay" class="space-y-1 mt-2"></div>
+                <div class="flex gap-2 mt-3">
+                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-green-500" placeholder="מייל של מנהל נוסף...">
+                    <button onclick="window.addNewAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap">הוסף</button>
+                </div>
             </div>
-            <div class="space-y-2">
-                <label class="text-xs text-gray-400 font-bold block">טקסט לפופ-אפ הודעות:</label>
-                <textarea id="popupInput" rows="3" class="w-full p-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-gray-500 resize-none" placeholder="הזן טקסט שיקפוץ לגולשים..."></textarea>
-                <button onclick="window.updatePopupText()" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg text-xs font-bold transition">שמור והפעל פופ-אפ</button>
+
+            <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
+                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב ותוכן</h4>
+                <div>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (לוגו עליון):</label>
+                    <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" value="המציאות שפשוט חבל לפספס">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">כותרת ראשית (אמצע):</label>
+                    <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" value="חפשו את הדיל שלכם">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">תיאור תחת הכותרת:</label>
+                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none resize-none focus:border-blue-500">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</textarea>
+                </div>
+                <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold transition mt-2">שמור ועדכן אתר</button>
             </div>
+            
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // ==========================================
+        // המייל שלך - המנהל הראשי שאי אפשר למחוק
+        const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
+        // ==========================================
 
         const firebaseConfig = {
             apiKey: "AIzaSyAFZXSNGr-1-8Q78mjDxaR0RAoh0yXxT48",
@@ -136,20 +160,120 @@
         window.isLoggedIn = false;
         window.pendingProductLink = "";
 
+        // ---- ניהול מנהלים ----
+        window.getAdminsList = function() {
+            let admins = localStorage.getItem("siteAdminsList");
+            if (admins) return JSON.parse(admins);
+            return [MASTER_ADMIN_EMAIL]; // אם אין כלום, החזר את המנהל הראשי
+        };
+
+        window.renderAdminList = function() {
+            const admins = window.getAdminsList();
+            const listDiv = document.getElementById('adminListDisplay');
+            if(!listDiv) return;
+            
+            listDiv.innerHTML = admins.map(email => `
+                <div class="flex justify-between items-center bg-gray-900 p-2 rounded-lg border border-gray-700">
+                    <span class="text-xs text-gray-300 truncate pl-2">${email}</span>
+                    ${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() 
+                        ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-400 transition" title="הסר מנהל"><i class="fa-solid fa-trash-can"></i></button>` 
+                        : `<span class="text-gray-500 text-[10px] font-bold bg-gray-800 px-2 py-0.5 rounded">ראשי</span>`
+                    }
+                </div>
+            `).join('');
+        };
+
+        window.addNewAdmin = function() {
+            const input = document.getElementById('newAdminEmail');
+            const newEmail = input.value.trim().toLowerCase();
+            if(!newEmail || !newEmail.includes('@')) {
+                alert("נא להזין כתובת אימייל תקינה.");
+                return;
+            }
+
+            let admins = window.getAdminsList();
+            if(!admins.includes(newEmail)) {
+                admins.push(newEmail);
+                localStorage.setItem("siteAdminsList", JSON.stringify(admins));
+                input.value = "";
+                window.renderAdminList();
+            } else {
+                alert("המייל הזה כבר מוגדר כמנהל במערכת.");
+            }
+        };
+
+        window.removeAdmin = function(emailToRemove) {
+            if(emailToRemove.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) return;
+            let admins = window.getAdminsList();
+            admins = admins.filter(email => email.toLowerCase() !== emailToRemove.toLowerCase());
+            localStorage.setItem("siteAdminsList", JSON.stringify(admins));
+            window.renderAdminList();
+        };
+
+        // ---- ניהול עיצוב ----
+        window.loadSiteSettings = function() {
+            const savedLogo = localStorage.getItem("siteLogoText");
+            const savedTitle = localStorage.getItem("siteMainTitle");
+            const savedDesc = localStorage.getItem("siteDescText");
+
+            if(savedLogo) {
+                document.getElementById('siteLogoDisplay').innerText = savedLogo;
+                document.getElementById('adminLogoText').value = savedLogo;
+            }
+            if(savedTitle) {
+                document.getElementById('siteTitleDisplay').innerText = savedTitle;
+                document.getElementById('adminMainTitle').value = savedTitle;
+            }
+            if(savedDesc) {
+                document.getElementById('siteDescDisplay').innerText = savedDesc;
+                document.getElementById('adminDesc').value = savedDesc;
+            }
+        };
+        window.loadSiteSettings();
+
+        window.saveSiteSettings = function() {
+            localStorage.setItem("siteLogoText", document.getElementById('adminLogoText').value);
+            localStorage.setItem("siteMainTitle", document.getElementById('adminMainTitle').value);
+            localStorage.setItem("siteDescText", document.getElementById('adminDesc').value);
+            window.loadSiteSettings();
+        };
+
+        // ---- התחברות ואימות ----
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.isLoggedIn = true;
                 const firstName = user.displayName ? user.displayName.split(' ')[0] : 'משתמש';
-                document.getElementById('userStatus').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 ml-1"></i> שלום, ${firstName}`;
+                
+                document.getElementById('userAuthArea').innerHTML = `
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold">
+                        <i class="fa-solid fa-circle-user"></i> ${firstName}
+                        <button onclick="window.handleLogout()" class="ml-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
+                    </div>
+                `;
+
+                // בדיקה אם המשתמש הוא מנהל (מופיע ברשימה)
+                const currentAdmins = window.getAdminsList();
+                if(currentAdmins.includes(user.email.toLowerCase())) {
+                    document.getElementById('adminBtn').classList.remove('hidden');
+                    window.renderAdminList(); // רנדור הרשימה כשמנהל מתחבר
+                } else {
+                    document.getElementById('adminBtn').classList.add('hidden');
+                }
+
             } else {
                 window.isLoggedIn = false;
-                document.getElementById('userStatus').innerHTML = `<i class="fa-solid fa-user ml-1 text-gray-400"></i> אורח`;
+                document.getElementById('adminBtn').classList.add('hidden');
+                document.getElementById('userAuthArea').innerHTML = `
+                    <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-brands fa-google text-blue-500"></i> התחבר
+                    </button>
+                `;
             }
         });
 
         window.handleGoogleLogin = async function() {
             try {
-                const result = await signInWithPopup(auth, provider);
+                await signInWithPopup(auth, provider);
                 window.isLoggedIn = true;
                 document.getElementById('loginModal').classList.add('hidden');
                 
@@ -159,14 +283,18 @@
                 }
             } catch (error) {
                 console.error("שגיאת התחברות:", error);
-                alert("ההתחברות נכשלה, אנא נסו שוב.");
             }
+        };
+
+        window.handleLogout = function() {
+            signOut(auth).then(() => { window.location.reload(); });
         };
 
         window.searchProducts = async function(isNewSearch) {
             const input = document.getElementById('searchInput').value.trim();
             if (!input) return;
 
+            document.getElementById('welcomeSection').classList.add('hidden');
             document.getElementById('filterMessage').classList.add('hidden');
 
             if (isNewSearch) {
@@ -203,9 +331,9 @@
                 if (!products || products.length === 0) {
                     if (isNewSearch) {
                         document.getElementById('results').innerHTML = `
-                            <div class="col-span-full text-center py-16">
-                                <i class="fa-solid fa-box-open text-3xl text-gray-200 mb-2"></i>
-                                <p class="text-gray-400 text-sm">לא נמצאו תוצאות מתאימות בטווח הזה.</p>
+                            <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-gray-100">
+                                <i class="fa-solid fa-box-open text-4xl text-gray-200 mb-3"></i>
+                                <p class="text-gray-500 font-medium">לא נמצאו תוצאות מתאימות בטווח הזה.</p>
                             </div>`;
                     }
                     return;
@@ -224,15 +352,15 @@
             products.forEach(p => {
                 const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
                 const card = `
-                    <div class="product-card bg-white rounded-2xl p-4 border border-gray-100 flex flex-col">
+                    <div class="product-card bg-white rounded-2xl p-4 border border-gray-200 flex flex-col shadow-sm">
                         <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
-                            <img src="${p.product_main_image_url}" class="w-full h-44 object-cover">
+                            <img src="${p.product_main_image_url}" class="w-full h-40 object-cover">
                         </div>
-                        <h3 class="text-gray-800 font-semibold text-xs mb-3 line-clamp-2 h-8 leading-tight">${p.product_title}</h3>
-                        <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
-                            <div class="text-lg font-extrabold text-gray-900">₪${price}</div>
-                            <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
-                                לצפייה בדיל
+                        <h3 class="text-gray-800 font-semibold text-sm mb-3 line-clamp-2 h-10 leading-tight">${p.product_title}</h3>
+                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                            <div class="text-xl font-extrabold text-green-600">₪${price}</div>
+                            <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
+                                צפייה בדיל
                             </button>
                         </div>
                     </div>
@@ -251,7 +379,6 @@
         };
 
         window.toggleAdminPanel = function() { document.getElementById('adminPanel').classList.toggle('hidden'); };
-        window.closePopup = function() { document.getElementById('popupModal').classList.add('hidden'); };
         
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if(e.key === 'Enter') window.searchProducts(true);
