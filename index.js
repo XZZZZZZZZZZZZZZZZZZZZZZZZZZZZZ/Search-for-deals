@@ -3,6 +3,9 @@ const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
 
+// מושך את הרשימה השחורה מהקובץ החיצוני
+const blackList = require('./blacklist.json');
+
 const app = express();
 app.use(cors());
 
@@ -36,7 +39,23 @@ app.get('/api/search', async (req, res) => {
       return res.status(400).json({ error: "אנא הזן מילת חיפוש" });
     }
 
+    // --- חסימה מוקדמת: בדיקה האם מילת החיפוש בעברית חסומה ---
+    const queryLower = originalQuery.toLowerCase();
+    const isQueryBlocked = blackList.some(word => queryLower.includes(word.toLowerCase()));
+    
+    if (isQueryBlocked) {
+      return res.status(400).json({ error: "החיפוש שלכם לא תואם את הגדרות הסינון" });
+    }
+
     const translatedQuery = await translateToEnglish(originalQuery);
+
+    // --- חסימה מוקדמת: בדיקה האם התרגום לאנגלית של החיפוש חסום ---
+    const translatedLower = translatedQuery.toLowerCase();
+    const isTranslatedBlocked = blackList.some(word => translatedLower.includes(word.toLowerCase()));
+
+    if (isTranslatedBlocked) {
+      return res.status(400).json({ error: "החיפוש שלכם לא תואם את הגדרות הסינון" });
+    }
 
     const appKey = process.env.ALI_APP_KEY;
     const appSecret = process.env.ALI_APP_SECRET;
@@ -55,7 +74,7 @@ app.get('/api/search', async (req, res) => {
       sign_method: "md5",
       keywords: translatedQuery,
       page_no: page,
-      page_size: "50", // מביא הרבה מוצרים כדי שיהיה מה לסנן
+      page_size: "50", 
       tracking_id: trackingId,
       ship_to_country: "IL",
       target_currency: "ILS",
@@ -76,14 +95,7 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
 
-    // --- מערכת הסלקטור המשודרגת (מחיר + איכות + רשימה שחורה) ---
-    
-    // רשימה שחורה: אתה יכול להוסיף לכאן כל מילה שתרצה (בתוך מרכאות עם פסיק ביניהן)
-    const blackList = [
-      "strap", "case", "cable", "screen protector", "cover", "silicone",
-      "רצועה", "מגן", "כבל", "כיסוי"
-    ];
-
+    // --- מערכת הסלקטור (סינון תוצאות) ---
     products = products.filter(p => {
       // 1. סינון מחיר
       const priceStr = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
@@ -92,19 +104,17 @@ app.get('/api/search', async (req, res) => {
       const max = maxPrice ? parseFloat(maxPrice) : Infinity;
       const isValidPrice = itemPrice >= min && itemPrice <= max;
 
-      // 2. סינון דירוג: משאיר רק מוצרים עם 4 כוכבים ומעלה (או מוצרים חדשים עם דירוג 0)
+      // 2. סינון דירוג
       const rating = parseFloat(p.evaluate_rate || "0");
       const isValidRating = rating >= 4.0 || rating === 0;
 
-      // 3. סינון רשימה שחורה
+      // 3. סינון רשימה שחורה על כותרות המוצרים (למקרה שהחיפוש היה תקין אבל עלה מוצר בעייתי)
       const titleLower = (p.product_title || "").toLowerCase();
       const hasBlacklistWord = blackList.some(word => titleLower.includes(word.toLowerCase()));
 
-      // המוצר שורד רק אם הוא עומד בכל התנאים
       return isValidPrice && isValidRating && !hasBlacklistWord;
     });
 
-    // חותך ל-10 התוצאות הכי טובות ושולח לאתר
     products = products.slice(0, 10);
     res.json(products);
 
