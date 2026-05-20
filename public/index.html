@@ -12,6 +12,8 @@
         .product-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
         main { padding-bottom: 120px; } 
+        /* מעבר חלק בין תמונות בגלריה */
+        .slider-img { transition: opacity 0.5s ease-in-out; }
     </style>
 </head>
 <body class="text-gray-900 min-h-screen flex flex-col">
@@ -38,6 +40,13 @@
         <div class="text-center mb-8 animate-fade-in" id="welcomeSection">
             <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3" id="siteTitleDisplay">חפשו את הדיל שלכם</h1>
             <p class="text-gray-500 text-base max-w-md mx-auto" id="siteDescDisplay">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
+        </div>
+
+        <div id="imageSliderContainer" class="max-w-4xl mx-auto mb-10 relative rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-gray-900 h-48 md:h-64">
+            <div id="sliderWrapper" class="w-full h-full relative">
+                <img id="sliderImage" src="" class="w-full h-full object-cover slider-img opacity-100" alt="Promo Banner">
+            </div>
+            <div id="sliderDots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10"></div>
         </div>
 
         <div id="filterMessage" class="hidden text-center mb-6 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl max-w-2xl mx-auto"></div>
@@ -79,9 +88,9 @@
             <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-blue-100">
                 <i class="fa-solid fa-bullhorn text-2xl"></i>
             </div>
-            <h3 id="campaignTitleDisplay" class="text-2xl font-black text-gray-950 mb-3">כותרת הודעה</h3>
-            <p id="campaignTextDisplay" class="text-gray-600 text-sm leading-relaxed mb-6">תוכן ההודעה יופיע כאן בצורה מסודרת לטובת הגולשים שלכם.</p>
-            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md active:scale-98">
+            <h3 id="campaignTitleDisplay" class="text-2xl font-black text-gray-950 mb-3"></h3>
+            <p id="campaignTextDisplay" class="text-gray-600 text-sm leading-relaxed mb-6"></p>
+            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">
                 הבנתי, תודה!
             </button>
         </div>
@@ -124,57 +133,57 @@
                 </div>
                 <div>
                     <label class="text-[11px] text-gray-400 block mb-1">טקסט בכפתור הסגירה:</label>
-                    <input type="text" id="adminCampaignBtnText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none focus:border-orange-500" placeholder="הבנתי, תודה!">
+                    <input type="text" id="adminCampaignBtnText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none focus:border-orange-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="text-[10px] text-gray-400 block mb-1">זמן קפיצה (שניות):</label>
-                        <input type="number" id="adminCampaignDelay" min="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-center text-white outline-none focus:border-orange-500" placeholder="3">
+                        <input type="number" id="adminCampaignDelay" min="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-center text-white outline-none focus:border-orange-500">
                     </div>
                     <div>
-                        <label class="text-[10px] text-gray-400 block mb-1">מקסימום פעמים למשתמש:</label>
-                        <input type="number" id="adminCampaignMaxShows" min="1" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-center text-white outline-none focus:border-orange-500" placeholder="1">
+                        <label class="text-[10px] text-gray-400 block mb-1">מקסימום צפיות:</label>
+                        <input type="number" id="adminCampaignMaxShows" min="1" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-center text-white outline-none focus:border-orange-500">
                     </div>
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block mb-1">תאריך ושעת סיום הקמפיין:</label>
+                    <label class="text-[11px] text-gray-400 block mb-1">תאריך ושעת סיום:</label>
                     <input type="datetime-local" id="adminCampaignExpiry" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none focus:border-orange-500">
                 </div>
-                <button onclick="window.saveCampaignSettings()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg text-xs font-bold transition shadow-md">עדכן קמפיין פופ-אפ</button>
+                <button onclick="window.saveCampaignSettings()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg text-xs font-bold transition">עדכן קמפיין פופ-אפ</button>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
                 <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב ותוכן האתר</h4>
                 <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (יופיע לצד הלוגו):</label>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (לצד הלוגו):</label>
                     <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
                 </div>
                 <div class="bg-gray-900 p-3 rounded-lg border border-gray-700">
-                    <label class="text-xs text-gray-400 font-bold block mb-2">תמונת לוגו (תופיע לצד השם):</label>
-                    <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer">
+                    <label class="text-xs text-gray-400 font-bold block mb-2">תמונת לוגו (אייקון):</label>
+                    <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer">
                     <button onclick="window.clearLogo()" class="text-[11px] text-red-400 hover:text-red-300 mt-3 flex items-center gap-1 transition"><i class="fa-solid fa-trash-can"></i> מחק תמונה</button>
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">טקסט בתוך שורת החיפוש:</label>
-                    <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
+                    <label class="text-xs text-gray-400 font-bold block mb-1">טקסט בשורת החיפוש:</label>
+                    <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">כותרת ראשית (אמצע):</label>
-                    <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
+                    <label class="text-xs text-gray-400 font-bold block mb-1">כותרת ראשית:</label>
+                    <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">תיאור תחת הכותרת:</label>
-                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none resize-none focus:border-blue-500"></textarea>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">תיאור:</label>
+                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white resize-none"></textarea>
                 </div>
-                <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-bold transition mt-2 shadow-lg">שמור ועדכן אתר</button>
+                <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-bold transition shadow-lg">שמור ועדכן אתר</button>
             </div>
             
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
                 <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> הרשאות ניהול</h4>
                 <div id="adminListDisplay" class="space-y-1 mt-2"></div>
                 <div class="flex gap-2 mt-3">
-                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-green-500" placeholder="מייל של מנהל...">
-                    <button onclick="window.addNewAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap">הוסף</button>
+                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none" placeholder="מייל של מנהל...">
+                    <button onclick="window.addNewAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition">הוסף</button>
                 </div>
             </div>
         </div>
@@ -207,33 +216,89 @@
         window.isLoggedIn = false;
         window.pendingProductLink = "";
 
-        // ---- מנגנון פופ-אפ קמפיין חכם ----
+        // ---- מנגנון גלריית 8 תמונות מתחלפות (עוצר אחרי 5 סיבובים) ----
+        const sliderImages = [
+            "https://picsum.photos/id/10/1200/400", // תמונה 1
+            "https://picsum.photos/id/20/1200/400", // תמונה 2
+            "https://picsum.photos/id/30/1200/400", // תמונה 3
+            "https://picsum.photos/id/40/1200/400", // תמונה 4
+            "https://picsum.photos/id/50/1200/400", // תמונה 5
+            "https://picsum.photos/id/60/1200/400", // תמונה 6
+            "https://picsum.photos/id/70/1200/400", // תמונה 7
+            "https://picsum.photos/id/80/1200/400"  // תמונה 8
+        ];
+        
+        let currentSliderIndex = 0;
+        let totalSwitchCount = 0;
+        const maxSwitches = 5 * sliderImages.length; // 5 סיבובים מלאים של כל 8 התמונות
+        let sliderInterval = null;
+
+        window.initSlider = function() {
+            const imgElement = document.getElementById('sliderImage');
+            const dotsContainer = document.getElementById('sliderDots');
+            if(!imgElement || sliderImages.length === 0) return;
+
+            // יצירת נקודות אינדיקטורים
+            dotsContainer.innerHTML = sliderImages.map((_, i) => `
+                <div id="dot-${i}" class="w-2 h-2 rounded-full bg-white/40 transition-all"></div>
+            `).join('');
+
+            window.updateSliderView();
+
+            // הפעלת מחזור החלפה אוטומטי בכל 3 שניות
+            sliderInterval = setInterval(() => {
+                if (totalSwitchCount >= maxSwitches) {
+                    clearInterval(sliderInterval); // עצירה מוחלטת אחרי 5 סבבים
+                    console.log("הגלריה השלימה 5 סיבובים ועצרה.");
+                    return;
+                }
+
+                currentSliderIndex = (currentSliderIndex + 1) % sliderImages.length;
+                totalSwitchCount++;
+                window.updateSliderView();
+            }, 3000);
+        };
+
+        window.updateSliderView = function() {
+            const imgElement = document.getElementById('sliderImage');
+            if(!imgElement) return;
+
+            // אפקט פייד-אאוט קל ומעבר חלק
+            imgElement.style.opacity = "0.3";
+            setTimeout(() => {
+                imgElement.src = sliderImages[currentSliderIndex];
+                imgElement.style.opacity = "1";
+                
+                // עדכון נקודות
+                sliderImages.forEach((_, i) => {
+                    const dot = document.getElementById(`dot-${i}`);
+                    if(dot) {
+                        if(i === currentSliderIndex) {
+                            dot.className = "w-4 h-2 rounded-full bg-white transition-all";
+                        } else {
+                            dot.className = "w-2 h-2 rounded-full bg-white/40 transition-all";
+                        }
+                    }
+                });
+            }, 150);
+        };
+
+        // ---- מנגנון קמפיין פופ-אפ ----
         window.checkAndShowCampaign = function() {
             const active = localStorage.getItem("campaignActive") === "true";
             if (!active) return;
-
-            // בדיקת תוקף זמן הקמפיין
             const expiry = localStorage.getItem("campaignExpiry");
-            if (expiry && new Date().getTime() > new Date(expiry).getTime()) {
-                return; // הקמפיין פג תוקף, לא מציגים
-            }
-
-            // בדיקת הגבלת צפיות למשתמש
+            if (expiry && new Date().getTime() > new Date(expiry).getTime()) return;
             const maxShows = parseInt(localStorage.getItem("campaignMaxShows") || "1");
             const currentShows = parseInt(localStorage.getItem("userCampaignViewCount") || "0");
-            if (currentShows >= maxShows) {
-                return; // המשתמש עבר את מכסת הצפיות המותרת
-            }
+            if (currentShows >= maxShows) return;
 
-            // הפעלה עם השהייה (דיליי) לפי הגדרות המנהל
             const delaySeconds = parseInt(localStorage.getItem("campaignDelay") || "3");
             setTimeout(() => {
-                document.getElementById('campaignTitleDisplay').innerText = localStorage.getItem("campaignTitle") || "הודעה חשובה";
+                document.getElementById('campaignTitleDisplay').innerText = localStorage.getItem("campaignTitle") || "הודעה";
                 document.getElementById('campaignTextDisplay').innerText = localStorage.getItem("campaignText") || "";
-                document.getElementById('campaignBtnDisplay').innerText = localStorage.getItem("campaignBtnText") || "הבנתי, תודה!";
+                document.getElementById('campaignBtnDisplay').innerText = localStorage.getItem("campaignBtnText") || "סגור";
                 document.getElementById('campaignModal').classList.remove('hidden');
-                
-                // עדכון מונה צפיות למשתמש הנוכחי
                 localStorage.setItem("userCampaignViewCount", (currentShows + 1).toString());
             }, delaySeconds * 1000);
         };
@@ -246,19 +311,16 @@
             localStorage.setItem("campaignDelay", document.getElementById('adminCampaignDelay').value || "3");
             localStorage.setItem("campaignMaxShows", document.getElementById('adminCampaignMaxShows').value || "1");
             localStorage.setItem("campaignExpiry", document.getElementById('adminCampaignExpiry').value);
-            
-            // איפוס מונה צפיות לכולם במידה והמנהל מעדכן קמפיין חדש
             localStorage.removeItem("userCampaignViewCount");
-
-            alert("הגדרות הקמפיין והפופ-אפ עודכנו בהצלחה!");
+            alert("קמפיין עודכן!");
             window.location.reload();
         };
 
         window.loadCampaignSettings = function() {
             document.getElementById('adminCampaignActive').checked = localStorage.getItem("campaignActive") === "true";
-            document.getElementById('adminCampaignTitle').value = localStorage.getItem("campaignTitle") || "מבצע מיוחד!";
-            document.getElementById('adminCampaignText').value = localStorage.getItem("campaignText") || "הצטרפו לקבוצת הטלגרם הרשמית שלנו לעוד דילים חמים.";
-            document.getElementById('adminCampaignBtnText').value = localStorage.getItem("campaignBtnText") || "הבנתי, תודה!";
+            document.getElementById('adminCampaignTitle').value = localStorage.getItem("campaignTitle") || "";
+            document.getElementById('adminCampaignText').value = localStorage.getItem("campaignText") || "";
+            document.getElementById('adminCampaignBtnText').value = localStorage.getItem("campaignBtnText") || "הבנתי";
             document.getElementById('adminCampaignDelay').value = localStorage.getItem("campaignDelay") || "3";
             document.getElementById('adminCampaignMaxShows').value = localStorage.getItem("campaignMaxShows") || "1";
             document.getElementById('adminCampaignExpiry').value = localStorage.getItem("campaignExpiry") || "";
@@ -276,10 +338,10 @@
             const listDiv = document.getElementById('adminListDisplay');
             if(!listDiv) return;
             listDiv.innerHTML = admins.map(email => `
-                <div class="flex justify-between items-center bg-gray-900 p-2 rounded-lg border border-gray-700">
+                <div class="flex justify-between items-center bg-gray-900 p-2 rounded-lg border border-gray-700 mt-1">
                     <span class="text-xs text-gray-300 truncate pl-2">${email}</span>
                     ${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() 
-                        ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-400 transition"><i class="fa-solid fa-trash-can"></i></button>` 
+                        ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button>` 
                         : `<span class="text-gray-500 text-[10px] font-bold bg-gray-800 px-2 py-0.5 rounded">ראשי</span>`
                     }
                 </div>
@@ -289,7 +351,7 @@
         window.addNewAdmin = function() {
             const input = document.getElementById('newAdminEmail');
             const newEmail = input.value.trim().toLowerCase();
-            if(!newEmail || !newEmail.includes('@')) return alert("נא להזין מייל תקין.");
+            if(!newEmail || !newEmail.includes('@')) return alert("מייל לא תקין");
             let admins = window.getAdminsList();
             if(!admins.includes(newEmail)) {
                 admins.push(newEmail);
@@ -315,7 +377,7 @@
             const savedDesc = localStorage.getItem("siteDescText") || "מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.";
 
             let logoHTML = "";
-            if(savedLogoImgBase64) logoHTML += `<img src="${savedLogoImgBase64}" class="h-10 w-auto object-contain shrink-0">`;
+            if(savedLogoImgBase64) logoHTML += `<img src="${savedLogoImgBase64}" class="h-10 w-auto object-contain shrink-0 rounded">`;
             logoHTML += `<span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">${savedLogoText}</span>`;
             
             document.getElementById('siteLogoDisplay').innerHTML = logoHTML;
@@ -340,12 +402,12 @@
                 reader.onload = function(e) {
                     localStorage.setItem("siteLogoImgBase64", e.target.result); 
                     window.loadSiteSettings();
-                    alert("ההגדרות נשמרו בהצלחה!");
+                    alert("העיצוב נשמר!");
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
                 window.loadSiteSettings();
-                alert("ההגדרות נשמרו בהצלחה!");
+                alert("העיצוב נשמר!");
             }
         };
 
@@ -354,10 +416,11 @@
             window.loadSiteSettings();
         };
 
-        // ---- אתחול טעינת עמוד ----
+        // אתחול המערכות בטעינה
         window.loadSiteSettings();
         window.loadCampaignSettings();
-        window.checkAndShowCampaign(); // בדיקה והפעלת פופ-אפ קמפיין אם מוגדר
+        window.checkAndShowCampaign();
+        window.initSlider(); // הפעלת הגלריה המתחלפת
 
         // ---- התחברות ואימות ----
         onAuthStateChanged(auth, (user) => {
@@ -398,6 +461,7 @@
             if (!input) return;
 
             document.getElementById('welcomeSection').classList.add('hidden');
+            document.getElementById('imageSliderContainer').classList.add('hidden'); // מסתיר את הגלריה בחיפושים כדי לפנות מקום למוצרים
             document.getElementById('filterMessage').classList.add('hidden');
 
             if (isNewSearch) {
