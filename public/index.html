@@ -11,7 +11,6 @@
         body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
         .product-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
-        /* מרווח תחתון כדי שהחיפוש לא יסתיר מוצרים */
         main { padding-bottom: 120px; } 
     </style>
 </head>
@@ -20,14 +19,12 @@
     <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div id="siteLogoDisplay" class="flex items-center gap-3 h-10">
-                    </div>
+                <div id="siteLogoDisplay" class="flex items-center gap-3 h-10"></div>
             </div>
             <div class="flex items-center gap-4">
                 <button id="adminBtn" onclick="window.toggleAdminPanel()" class="hidden text-xs text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition shadow-sm">
                     <i class="fa-solid fa-sliders ml-1"></i> ניהול
                 </button>
-                
                 <div id="userAuthArea">
                     <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2">
                         <i class="fa-brands fa-google text-blue-500"></i> התחבר
@@ -38,21 +35,17 @@
     </nav>
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 pt-8">
-        
         <div class="text-center mb-8 animate-fade-in" id="welcomeSection">
             <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3" id="siteTitleDisplay">חפשו את הדיל שלכם</h1>
             <p class="text-gray-500 text-base max-w-md mx-auto" id="siteDescDisplay">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
         </div>
 
         <div id="filterMessage" class="hidden text-center mb-6 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl max-w-2xl mx-auto"></div>
-
         <div id="loader" class="hidden text-center py-20">
             <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
             <p class="mt-4 text-gray-400 text-sm font-medium">שולף את התוצאות הכי טובות...</p>
         </div>
-
         <div id="results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
-
         <div id="pagination" class="hidden text-center mt-12 mb-8">
             <button onclick="window.searchProducts(false)" class="bg-white border border-gray-200 text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm text-sm">
                 הצג תוצאות נוספות
@@ -80,6 +73,20 @@
         </div>
     </div>
 
+    <div id="campaignModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl text-center relative border border-gray-100">
+            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-blue-100">
+                <i class="fa-solid fa-bullhorn text-2xl"></i>
+            </div>
+            <h3 id="campaignTitleDisplay" class="text-2xl font-black text-gray-950 mb-3">כותרת הודעה</h3>
+            <p id="campaignTextDisplay" class="text-gray-600 text-sm leading-relaxed mb-6">תוכן ההודעה יופיע כאן בצורה מסודרת לטובת הגולשים שלכם.</p>
+            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md active:scale-98">
+                הבנתי, תודה!
+            </button>
+        </div>
+    </div>
+
     <div id="loginModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center relative">
             <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -101,44 +108,55 @@
         </div>
         
         <div class="flex-grow space-y-6">
-
-            <div class="grid grid-cols-2 gap-3 mb-2">
-                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">משתמשים רשומים</span>
-                    <span class="text-xl font-bold text-white">0</span>
-                </div>
-                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">חיפושים שבוצעו</span>
-                    <span class="text-xl font-bold text-white">0</span>
-                </div>
-                <div class="col-span-2 text-[10px] text-center text-orange-400">הנתונים יתעדכנו לאחר חיבור ל-Database</div>
-            </div>
-            
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> הרשאות ניהול</h4>
-                <div id="adminListDisplay" class="space-y-1 mt-2"></div>
-                <div class="flex gap-2 mt-3">
-                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-green-500" placeholder="מייל של מנהל נוסף...">
-                    <button onclick="window.addNewAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap">הוסף</button>
+                <h4 class="text-sm font-bold text-orange-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-bullhorn ml-1"></i> ניהול פופ-אפ / קמפיין</h4>
+                <div class="flex items-center gap-2 py-1">
+                    <input type="checkbox" id="adminCampaignActive" class="w-4 h-4 cursor-pointer">
+                    <label for="adminCampaignActive" class="text-xs text-gray-200 font-bold cursor-pointer">הפעל פופ-אפ קופץ באתר</label>
                 </div>
+                <div>
+                    <label class="text-[11px] text-gray-400 block mb-1">כותרת הפופ-אפ:</label>
+                    <input type="text" id="adminCampaignTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none focus:border-orange-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-gray-400 block mb-1">תוכן / הודעה:</label>
+                    <textarea id="adminCampaignText" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none resize-none focus:border-orange-500"></textarea>
+                </div>
+                <div>
+                    <label class="text-[11px] text-gray-400 block mb-1">טקסט בכפתור הסגירה:</label>
+                    <input type="text" id="adminCampaignBtnText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none focus:border-orange-500" placeholder="הבנתי, תודה!">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">זמן קפיצה (שניות):</label>
+                        <input type="number" id="adminCampaignDelay" min="0" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-center text-white outline-none focus:border-orange-500" placeholder="3">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">מקסימום פעמים למשתמש:</label>
+                        <input type="number" id="adminCampaignMaxShows" min="1" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-center text-white outline-none focus:border-orange-500" placeholder="1">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[11px] text-gray-400 block mb-1">תאריך ושעת סיום הקמפיין:</label>
+                    <input type="datetime-local" id="adminCampaignExpiry" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white outline-none focus:border-orange-500">
+                </div>
+                <button onclick="window.saveCampaignSettings()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg text-xs font-bold transition shadow-md">עדכן קמפיין פופ-אפ</button>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב ותוכן</h4>
+                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב ותוכן האתר</h4>
                 <div>
                     <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (יופיע לצד הלוגו):</label>
-                    <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="המציאות שפשוט חבל לפספס">
+                    <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
                 </div>
-                
                 <div class="bg-gray-900 p-3 rounded-lg border border-gray-700">
                     <label class="text-xs text-gray-400 font-bold block mb-2">תמונת לוגו (תופיע לצד השם):</label>
                     <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer">
                     <button onclick="window.clearLogo()" class="text-[11px] text-red-400 hover:text-red-300 mt-3 flex items-center gap-1 transition"><i class="fa-solid fa-trash-can"></i> מחק תמונה</button>
                 </div>
-
                 <div>
                     <label class="text-xs text-gray-400 font-bold block mb-1">טקסט בתוך שורת החיפוש:</label>
-                    <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="רשמו מוצר לחיפוש...">
+                    <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="text-xs text-gray-400 font-bold block mb-1">כותרת ראשית (אמצע):</label>
@@ -151,6 +169,14 @@
                 <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-bold transition mt-2 shadow-lg">שמור ועדכן אתר</button>
             </div>
             
+            <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
+                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> הרשאות ניהול</h4>
+                <div id="adminListDisplay" class="space-y-1 mt-2"></div>
+                <div class="flex gap-2 mt-3">
+                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-green-500" placeholder="מייל של מנהל...">
+                    <button onclick="window.addNewAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap">הוסף</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -158,9 +184,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // ==========================================
         const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
-        // ==========================================
 
         const firebaseConfig = {
             apiKey: "AIzaSyAFZXSNGr-1-8Q78mjDxaR0RAoh0yXxT48",
@@ -183,6 +207,63 @@
         window.isLoggedIn = false;
         window.pendingProductLink = "";
 
+        // ---- מנגנון פופ-אפ קמפיין חכם ----
+        window.checkAndShowCampaign = function() {
+            const active = localStorage.getItem("campaignActive") === "true";
+            if (!active) return;
+
+            // בדיקת תוקף זמן הקמפיין
+            const expiry = localStorage.getItem("campaignExpiry");
+            if (expiry && new Date().getTime() > new Date(expiry).getTime()) {
+                return; // הקמפיין פג תוקף, לא מציגים
+            }
+
+            // בדיקת הגבלת צפיות למשתמש
+            const maxShows = parseInt(localStorage.getItem("campaignMaxShows") || "1");
+            const currentShows = parseInt(localStorage.getItem("userCampaignViewCount") || "0");
+            if (currentShows >= maxShows) {
+                return; // המשתמש עבר את מכסת הצפיות המותרת
+            }
+
+            // הפעלה עם השהייה (דיליי) לפי הגדרות המנהל
+            const delaySeconds = parseInt(localStorage.getItem("campaignDelay") || "3");
+            setTimeout(() => {
+                document.getElementById('campaignTitleDisplay').innerText = localStorage.getItem("campaignTitle") || "הודעה חשובה";
+                document.getElementById('campaignTextDisplay').innerText = localStorage.getItem("campaignText") || "";
+                document.getElementById('campaignBtnDisplay').innerText = localStorage.getItem("campaignBtnText") || "הבנתי, תודה!";
+                document.getElementById('campaignModal').classList.remove('hidden');
+                
+                // עדכון מונה צפיות למשתמש הנוכחי
+                localStorage.setItem("userCampaignViewCount", (currentShows + 1).toString());
+            }, delaySeconds * 1000);
+        };
+
+        window.saveCampaignSettings = function() {
+            localStorage.setItem("campaignActive", document.getElementById('adminCampaignActive').checked);
+            localStorage.setItem("campaignTitle", document.getElementById('adminCampaignTitle').value);
+            localStorage.setItem("campaignText", document.getElementById('adminCampaignText').value);
+            localStorage.setItem("campaignBtnText", document.getElementById('adminCampaignBtnText').value);
+            localStorage.setItem("campaignDelay", document.getElementById('adminCampaignDelay').value || "3");
+            localStorage.setItem("campaignMaxShows", document.getElementById('adminCampaignMaxShows').value || "1");
+            localStorage.setItem("campaignExpiry", document.getElementById('adminCampaignExpiry').value);
+            
+            // איפוס מונה צפיות לכולם במידה והמנהל מעדכן קמפיין חדש
+            localStorage.removeItem("userCampaignViewCount");
+
+            alert("הגדרות הקמפיין והפופ-אפ עודכנו בהצלחה!");
+            window.location.reload();
+        };
+
+        window.loadCampaignSettings = function() {
+            document.getElementById('adminCampaignActive').checked = localStorage.getItem("campaignActive") === "true";
+            document.getElementById('adminCampaignTitle').value = localStorage.getItem("campaignTitle") || "מבצע מיוחד!";
+            document.getElementById('adminCampaignText').value = localStorage.getItem("campaignText") || "הצטרפו לקבוצת הטלגרם הרשמית שלנו לעוד דילים חמים.";
+            document.getElementById('adminCampaignBtnText').value = localStorage.getItem("campaignBtnText") || "הבנתי, תודה!";
+            document.getElementById('adminCampaignDelay').value = localStorage.getItem("campaignDelay") || "3";
+            document.getElementById('adminCampaignMaxShows').value = localStorage.getItem("campaignMaxShows") || "1";
+            document.getElementById('adminCampaignExpiry').value = localStorage.getItem("campaignExpiry") || "";
+        };
+
         // ---- ניהול מנהלים ----
         window.getAdminsList = function() {
             let admins = localStorage.getItem("siteAdminsList");
@@ -194,12 +275,11 @@
             const admins = window.getAdminsList();
             const listDiv = document.getElementById('adminListDisplay');
             if(!listDiv) return;
-            
             listDiv.innerHTML = admins.map(email => `
                 <div class="flex justify-between items-center bg-gray-900 p-2 rounded-lg border border-gray-700">
                     <span class="text-xs text-gray-300 truncate pl-2">${email}</span>
                     ${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() 
-                        ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-400 transition" title="הסר מנהל"><i class="fa-solid fa-trash-can"></i></button>` 
+                        ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-400 transition"><i class="fa-solid fa-trash-can"></i></button>` 
                         : `<span class="text-gray-500 text-[10px] font-bold bg-gray-800 px-2 py-0.5 rounded">ראשי</span>`
                     }
                 </div>
@@ -209,24 +289,17 @@
         window.addNewAdmin = function() {
             const input = document.getElementById('newAdminEmail');
             const newEmail = input.value.trim().toLowerCase();
-            if(!newEmail || !newEmail.includes('@')) {
-                alert("נא להזין כתובת אימייל תקינה.");
-                return;
-            }
-
+            if(!newEmail || !newEmail.includes('@')) return alert("נא להזין מייל תקין.");
             let admins = window.getAdminsList();
             if(!admins.includes(newEmail)) {
                 admins.push(newEmail);
                 localStorage.setItem("siteAdminsList", JSON.stringify(admins));
                 input.value = "";
                 window.renderAdminList();
-            } else {
-                alert("המייל הזה כבר מוגדר כמנהל במערכת.");
             }
         };
 
         window.removeAdmin = function(emailToRemove) {
-            if(emailToRemove.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) return;
             let admins = window.getAdminsList();
             admins = admins.filter(email => email.toLowerCase() !== emailToRemove.toLowerCase());
             localStorage.setItem("siteAdminsList", JSON.stringify(admins));
@@ -241,27 +314,20 @@
             const savedTitle = localStorage.getItem("siteMainTitle") || "חפשו את הדיל שלכם";
             const savedDesc = localStorage.getItem("siteDescText") || "מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.";
 
-            // לוגו ותטקסט ביחד
             let logoHTML = "";
-            if(savedLogoImgBase64) {
-                logoHTML += `<img src="${savedLogoImgBase64}" class="h-10 w-auto object-contain shrink-0" alt="Logo">`;
-            }
+            if(savedLogoImgBase64) logoHTML += `<img src="${savedLogoImgBase64}" class="h-10 w-auto object-contain shrink-0">`;
             logoHTML += `<span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">${savedLogoText}</span>`;
             
             document.getElementById('siteLogoDisplay').innerHTML = logoHTML;
             document.getElementById('adminLogoText').value = savedLogoText;
-            
             document.getElementById('searchInput').placeholder = savedSearchPlaceholder;
             document.getElementById('adminSearchPlaceholder').value = savedSearchPlaceholder;
-
             document.getElementById('siteTitleDisplay').innerText = savedTitle;
             document.getElementById('adminMainTitle').value = savedTitle;
             document.getElementById('siteDescDisplay').innerText = savedDesc;
             document.getElementById('adminDesc').value = savedDesc;
         };
-        window.loadSiteSettings();
 
-        // שמירת הגדרות 
         window.saveSiteSettings = function() {
             localStorage.setItem("siteLogoText", document.getElementById('adminLogoText').value);
             localStorage.setItem("siteSearchPlaceholder", document.getElementById('adminSearchPlaceholder').value);
@@ -274,7 +340,7 @@
                 reader.onload = function(e) {
                     localStorage.setItem("siteLogoImgBase64", e.target.result); 
                     window.loadSiteSettings();
-                    alert("ההגדרות והתמונה נשמרו בהצלחה!");
+                    alert("ההגדרות נשמרו בהצלחה!");
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
@@ -283,64 +349,49 @@
             }
         };
 
-        // מחיקת הלוגו
         window.clearLogo = function() {
             localStorage.removeItem("siteLogoImgBase64");
-            document.getElementById('adminLogoUpload').value = "";
             window.loadSiteSettings();
-            alert("התמונה הוסרה.");
         };
+
+        // ---- אתחול טעינת עמוד ----
+        window.loadSiteSettings();
+        window.loadCampaignSettings();
+        window.checkAndShowCampaign(); // בדיקה והפעלת פופ-אפ קמפיין אם מוגדר
 
         // ---- התחברות ואימות ----
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.isLoggedIn = true;
                 const firstName = user.displayName ? user.displayName.split(' ')[0] : 'משתמש';
-                
                 document.getElementById('userAuthArea').innerHTML = `
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold">
                         <i class="fa-solid fa-circle-user"></i> ${firstName}
                         <button onclick="window.handleLogout()" class="ml-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 `;
-
                 const currentAdmins = window.getAdminsList();
                 if(user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase() || currentAdmins.includes(user.email.toLowerCase())) {
                     document.getElementById('adminBtn').classList.remove('hidden');
                     window.renderAdminList(); 
-                } else {
-                    document.getElementById('adminBtn').classList.add('hidden');
                 }
-
             } else {
                 window.isLoggedIn = false;
                 document.getElementById('adminBtn').classList.add('hidden');
-                document.getElementById('userAuthArea').innerHTML = `
-                    <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-brands fa-google text-blue-500"></i> התחבר
-                    </button>
-                `;
             }
         });
 
         window.handleGoogleLogin = async function() {
             try {
                 await signInWithPopup(auth, provider);
-                window.isLoggedIn = true;
-                document.getElementById('loginModal').classList.add('hidden');
-                
                 if (window.pendingProductLink) {
                     window.open(window.pendingProductLink, '_blank');
                     window.pendingProductLink = "";
                 }
-            } catch (error) {
-                console.error("שגיאת התחברות:", error);
-            }
+            } catch (e) { console.error(e); }
         };
 
-        window.handleLogout = function() {
-            signOut(auth).then(() => { window.location.reload(); });
-        };
+        window.handleLogout = function() { signOut(auth).then(() => { window.location.reload(); }); };
 
         window.searchProducts = async function(isNewSearch) {
             const input = document.getElementById('searchInput').value.trim();
@@ -355,7 +406,6 @@
                 window.currentMin = document.getElementById('minPrice').value;
                 window.currentMax = document.getElementById('maxPrice').value;
                 document.getElementById('results').innerHTML = "";
-                document.getElementById('pagination').classList.add('hidden');
             } else {
                 window.currentPage++;
             }
@@ -369,74 +419,50 @@
 
                 const response = await fetch(url);
                 const products = await response.json();
-                
                 document.getElementById('loader').classList.add('hidden');
 
                 if (response.status !== 200) {
                     if(products.error === "החיפוש שלכם לא תואם את הגדרות הסינון") {
                         document.getElementById('filterMessage').innerText = products.error;
                         document.getElementById('filterMessage').classList.remove('hidden');
-                    } else {
-                        alert(products.error || "שגיאה בטעינת פריטים");
                     }
                     return;
                 }
 
-                if (!products || products.length === 0) {
-                    if (isNewSearch) {
-                        document.getElementById('results').innerHTML = `
-                            <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-gray-100">
-                                <i class="fa-solid fa-box-open text-4xl text-gray-200 mb-3"></i>
-                                <p class="text-gray-500 font-medium">לא נמצאו תוצאות מתאימות בטווח הזה.</p>
-                            </div>`;
-                    }
-                    return;
-                }
-
+                if (!products || products.length === 0) return;
                 renderItems(products);
                 document.getElementById('pagination').classList.remove('hidden');
-            } catch (e) {
-                document.getElementById('loader').classList.add('hidden');
-                alert("שגיאה בתקשורת עם השרת.");
-            }
+            } catch (e) { document.getElementById('loader').classList.add('hidden'); }
         };
 
         function renderItems(products) {
             const grid = document.getElementById('results');
             products.forEach(p => {
                 const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
-                const card = `
+                grid.innerHTML += `
                     <div class="product-card bg-white rounded-2xl p-4 border border-gray-200 flex flex-col shadow-sm">
                         <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
                             <img src="${p.product_main_image_url}" class="w-full h-40 object-cover">
                         </div>
                         <h3 class="text-gray-800 font-semibold text-sm mb-3 line-clamp-2 h-10 leading-tight">${p.product_title}</h3>
                         <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                            <div class="text-xl font-extrabold text-green-600">₪${price}</div>
+                            <div class="text-xl font-extrabold text-green-600"><span class="text-xs font-normal text-gray-400 ml-0.5">מ-</span>₪${price}</div>
                             <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
                                 צפייה בדיל
                             </button>
                         </div>
                     </div>
                 `;
-                grid.innerHTML += card;
             });
         }
 
         window.handleProductClick = function(link) {
-            if (window.isLoggedIn) {
-                window.open(link, '_blank');
-            } else {
-                window.pendingProductLink = link;
-                document.getElementById('loginModal').classList.remove('hidden');
-            }
+            if (window.isLoggedIn) { window.open(link, '_blank'); } 
+            else { window.pendingProductLink = link; document.getElementById('loginModal').classList.remove('hidden'); }
         };
 
         window.toggleAdminPanel = function() { document.getElementById('adminPanel').classList.toggle('hidden'); };
-        
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') window.searchProducts(true);
-        });
+        document.getElementById('searchInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.searchProducts(true); });
     </script>
 </body>
 </html>
