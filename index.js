@@ -26,6 +26,20 @@ async function translateToEnglish(text) {
   }
 }
 
+// פונקציית עזר פנימית לחילוץ המחיר המדויק ביותר של הדיל
+function getExactPrice(p) {
+  // בודק סדר עדיפויות של שדות המחיר המוזלים והמדויקים ביותר של עליאקספרס
+  const rawPrice = p.target_app_sale_price_attain_value || 
+                   p.target_sale_price_attain_value || 
+                   p.target_app_sale_price || 
+                   p.target_sale_price || 
+                   "0";
+  
+  // מנקה תווים מיותרים ולוקח את המספר הראשון במידה ויש טווח (למשל "10-20")
+  const priceStr = rawPrice.toString().split("-")[0].replace(/[^\d.]/g, "");
+  return parseFloat(priceStr) || 0;
+}
+
 app.get('/api/search', async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   
@@ -97,9 +111,8 @@ app.get('/api/search', async (req, res) => {
 
     // --- מערכת הסלקטור (סינון תוצאות) ---
     products = products.filter(p => {
-      // 1. סינון מחיר
-      const priceStr = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
-      const itemPrice = parseFloat(priceStr);
+      // 1. סינון מחיר בעזרת הפונקציה המדויקת החדשה
+      const itemPrice = getExactPrice(p);
       const min = minPrice ? parseFloat(minPrice) : 0;
       const max = maxPrice ? parseFloat(maxPrice) : Infinity;
       const isValidPrice = itemPrice >= min && itemPrice <= max;
@@ -108,11 +121,20 @@ app.get('/api/search', async (req, res) => {
       const rating = parseFloat(p.evaluate_rate || "0");
       const isValidRating = rating >= 4.0 || rating === 0;
 
-      // 3. סינון רשימה שחורה על כותרות המוצרים (למקרה שהחיפוש היה תקין אבל עלה מוצר בעייתי)
+      // 3. סינון רשימה שחורה על כותרות המוצרים
       const titleLower = (p.product_title || "").toLowerCase();
       const hasBlacklistWord = blackList.some(word => titleLower.includes(word.toLowerCase()));
 
       return isValidPrice && isValidRating && !hasBlacklistWord;
+    });
+
+    // דריסת השדה הישן בשדה המחיר המדויק לפני שליחה לאתר, כדי שהאתר יציג בדיוק את המחיר הנכון
+    products = products.map(p => {
+      const exactPrice = getExactPrice(p);
+      return {
+        ...p,
+        target_app_sale_price: exactPrice.toString() // מעדכן את השדה שהאתר קורא
+      };
     });
 
     products = products.slice(0, 10);
