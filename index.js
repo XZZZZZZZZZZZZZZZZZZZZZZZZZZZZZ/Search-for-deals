@@ -1,420 +1,136 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="he">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>המציאות שפשוט חבל לפספס</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;800&display=swap');
-        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
-        .product-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
-        /* מרווח תחתון כדי שהחיפוש לא יסתיר מוצרים */
-        main { padding-bottom: 120px; } 
-    </style>
-</head>
-<body class="text-gray-900 min-h-screen flex flex-col">
+const express = require('express');
+const cors = require('cors');
+const crypto = require('crypto');
+const path = require('path');
 
-    <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-4 shadow-sm">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div id="siteLogoDisplay" class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    המציאות שפשוט חבל לפספס
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <button id="adminBtn" onclick="window.toggleAdminPanel()" class="hidden text-xs text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition shadow-sm">
-                    <i class="fa-solid fa-sliders ml-1"></i> ניהול
-                </button>
-                
-                <div id="userAuthArea">
-                    <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2">
-                        <i class="fa-brands fa-google text-blue-500"></i> התחבר
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+// מושך את הרשימה השחורה מהקובץ החיצוני
+const blackList = require('./blacklist.json');
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 pt-8">
-        
-        <div class="text-center mb-8 animate-fade-in" id="welcomeSection">
-            <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3" id="siteTitleDisplay">חפשו את הדיל שלכם</h1>
-            <p class="text-gray-500 text-base max-w-md mx-auto" id="siteDescDisplay">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
-        </div>
+const app = express();
+app.use(cors());
 
-        <div id="filterMessage" class="hidden text-center mb-6 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl max-w-2xl mx-auto"></div>
+app.use(express.static(path.join(__dirname, 'public')));
 
-        <div id="loader" class="hidden text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
-            <p class="mt-4 text-gray-400 text-sm font-medium">שולף את התוצאות הכי טובות...</p>
-        </div>
+const port = process.env.PORT || 8000;
 
-        <div id="results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+async function translateToEnglish(text) {
+  try {
+    if (!/[\u0590-\u05FF]/.test(text)) return text;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=iw&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data[0][0][0];
+  } catch (error) {
+    console.error("שגיאת תרגום:", error);
+    return text;
+  }
+}
 
-        <div id="pagination" class="hidden text-center mt-12 mb-8">
-            <button onclick="window.searchProducts(false)" class="bg-white border border-gray-200 text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm text-sm">
-                הצג תוצאות נוספות
-            </button>
-        </div>
-    </main>
+app.get('/api/search', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  
+  try {
+    const originalQuery = req.query.q;
+    const page = req.query.page || "1";
+    const minPrice = req.query.min || ""; 
+    const maxPrice = req.query.max || "";
 
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] p-4 z-30">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex flex-col sm:flex-row gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:bg-white transition-all">
-                <div class="flex-grow flex items-center pr-3 gap-2">
-                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-                    <input type="text" id="searchInput" placeholder="רשמו מוצר לחיפוש..." class="w-full p-2 bg-transparent outline-none text-base sm:text-lg text-gray-800">
-                </div>
-                <div class="flex items-center gap-2 px-2 border-r border-l border-gray-200">
-                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מ-₪</span>
-                    <input type="number" id="minPrice" placeholder="0" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
-                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">עד-₪</span>
-                    <input type="number" id="maxPrice" placeholder="MAX" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
-                </div>
-                <button onclick="window.searchProducts(true)" class="bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition font-bold shadow-sm active:scale-95 whitespace-nowrap">
-                    חפש דילים
-                </button>
-            </div>
-        </div>
-    </div>
+    if (!originalQuery) {
+      return res.status(400).json({ error: "אנא הזן מילת חיפוש" });
+    }
 
-    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center relative">
-            <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-100 text-gray-900">
-                <i class="fa-solid fa-lock text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-black text-gray-950 mb-4">כדי לעבור למוצר בעלי קספרס יש להתחבר</h3>
-            <button onclick="window.handleGoogleLogin()" class="w-full bg-white border border-gray-300 text-gray-700 py-3.5 px-4 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-3 shadow-sm active:scale-98">
-                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.41 3.66 1.48 7.56l3.8 2.94C6.23 7.39 8.89 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.28 1.48-1.12 2.74-2.38 3.58l3.7 2.87c2.16-1.99 3.41-4.92 3.41-8.6z"/><path fill="#FBBC05" d="M5.28 14.51c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.48 7.56C.54 9.47 0 11.62 0 13.9s.54 4.43 1.48 6.34l3.8-2.93z"/><path fill="#34A353" d="M12 23c3.24 0 5.97-1.08 7.96-2.91l-3.7-2.87c-1.03.69-2.34 1.1-4.26 1.1-3.11 0-5.77-2.35-6.72-5.46l-3.8 2.93C3.41 20.34 7.35 23 12 23z"/></svg>
-                התחבר עם Google
-            </button>
-        </div>
-    </div>
+    // --- חסימה מוקדמת: בדיקה האם מילת החיפוש בעברית חסומה ---
+    const queryLower = originalQuery.toLowerCase();
+    const isQueryBlocked = blackList.some(word => queryLower.includes(word.toLowerCase()));
+    
+    if (isQueryBlocked) {
+      return res.status(400).json({ error: "החיפוש שלכם לא תואם את הגדרות הסינון" });
+    }
 
-    <div id="adminPanel" class="hidden fixed inset-y-0 left-0 w-80 bg-gray-900 text-white z-50 p-6 shadow-2xl flex flex-col border-r border-gray-800 overflow-y-auto">
-        <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-sliders"></i> פאנל מנהל</h3>
-            <button onclick="window.toggleAdminPanel()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        
-        <div class="flex-grow space-y-6">
+    const translatedQuery = await translateToEnglish(originalQuery);
 
-            <div class="grid grid-cols-2 gap-3 mb-2">
-                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">משתמשים רשומים</span>
-                    <span class="text-xl font-bold text-white">0</span>
-                </div>
-                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">חיפושים שבוצעו</span>
-                    <span class="text-xl font-bold text-white">0</span>
-                </div>
-                <div class="col-span-2 text-[10px] text-center text-orange-400">הנתונים יתעדכנו לאחר חיבור מלא ל-Database</div>
-            </div>
-            
-            <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> הרשאות ניהול</h4>
-                <div id="adminListDisplay" class="space-y-1 mt-2"></div>
-                <div class="flex gap-2 mt-3">
-                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-green-500" placeholder="מייל של מנהל נוסף...">
-                    <button onclick="window.addNewAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap">הוסף</button>
-                </div>
-            </div>
+    // --- חסימה מוקדמת: בדיקה האם התרגום לאנגלית של החיפוש חסום ---
+    const translatedLower = translatedQuery.toLowerCase();
+    const isTranslatedBlocked = blackList.some(word => translatedLower.includes(word.toLowerCase()));
 
-            <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב ותוכן</h4>
-                <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (לוגו טקסט):</label>
-                    <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="המציאות שפשוט חבל לפספס">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">תמונת לוגו (הדבק קישור, מחליף את הטקסט):</label>
-                    <input type="text" id="adminLogoImgUrl" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="https://example.com/logo.png">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">טקסט בתוך שורת החיפוש:</label>
-                    <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="רשמו מוצר לחיפוש...">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">כותרת ראשית (אמצע):</label>
-                    <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">תיאור תחת הכותרת:</label>
-                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none resize-none focus:border-blue-500"></textarea>
-                </div>
-                <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold transition mt-2">שמור ועדכן אתר</button>
-            </div>
-            
-        </div>
-    </div>
+    if (isTranslatedBlocked) {
+      return res.status(400).json({ error: "החיפוש שלכם לא תואם את הגדרות הסינון" });
+    }
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    const appKey = process.env.ALI_APP_KEY;
+    const appSecret = process.env.ALI_APP_SECRET;
+    const trackingId = process.env.ALI_TRACKING_ID;
 
-        // ==========================================
-        const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
-        // ==========================================
+    if (!appKey || !appSecret || !trackingId) {
+      return res.status(500).json({ error: "חסרים משתני סביבה בשרת" });
+    }
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAFZXSNGr-1-8Q78mjDxaR0RAoh0yXxT48",
-            authDomain: "alibot-deals.firebaseapp.com",
-            projectId: "alibot-deals",
-            storageBucket: "alibot-deals.firebasestorage.app",
-            messagingSenderId: "1052728887673",
-            appId: "1:1052728887673:web:267f0f9c4e51648d2647a8",
-            measurementId: "G-EN67LMTT6T"
-        };
+    const params = {
+      app_key: appKey,
+      method: "aliexpress.affiliate.product.query",
+      timestamp: Date.now(),
+      format: "json",
+      v: "2.0",
+      sign_method: "md5",
+      keywords: translatedQuery,
+      page_no: page,
+      page_size: "50", 
+      tracking_id: trackingId,
+      ship_to_country: "IL",
+      target_currency: "ILS",
+      target_language: "HE"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+    params.sign = generateSign(params, appSecret);
 
-        window.currentPage = 1;
-        window.currentQuery = "";
-        window.currentMin = "";
-        window.currentMax = "";
-        window.isLoggedIn = false;
-        window.pendingProductLink = "";
+    const url = new URL("https://api-sg.aliexpress.com/sync");
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
-        // ---- ניהול מנהלים ----
-        window.getAdminsList = function() {
-            let admins = localStorage.getItem("siteAdminsList");
-            if (admins) return JSON.parse(admins);
-            return [MASTER_ADMIN_EMAIL]; 
-        };
+    const response = await fetch(url.toString(), { method: 'GET' });
+    const data = await response.json();
+    
+    let products = data?.aliexpress_affiliate_product_query_response?.resp_result?.result?.products?.product || [];
+    
+    if (products.length === 0 && data?.error_response) {
+        return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
+    }
 
-        window.renderAdminList = function() {
-            const admins = window.getAdminsList();
-            const listDiv = document.getElementById('adminListDisplay');
-            if(!listDiv) return;
-            
-            listDiv.innerHTML = admins.map(email => `
-                <div class="flex justify-between items-center bg-gray-900 p-2 rounded-lg border border-gray-700">
-                    <span class="text-xs text-gray-300 truncate pl-2">${email}</span>
-                    ${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() 
-                        ? `<button onclick="window.removeAdmin('${email}')" class="text-red-500 hover:text-red-400 transition" title="הסר מנהל"><i class="fa-solid fa-trash-can"></i></button>` 
-                        : `<span class="text-gray-500 text-[10px] font-bold bg-gray-800 px-2 py-0.5 rounded">ראשי</span>`
-                    }
-                </div>
-            `).join('');
-        };
+    // --- מערכת הסלקטור (סינון תוצאות) ---
+    products = products.filter(p => {
+      // 1. סינון מחיר
+      const priceStr = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
+      const itemPrice = parseFloat(priceStr);
+      const min = minPrice ? parseFloat(minPrice) : 0;
+      const max = maxPrice ? parseFloat(maxPrice) : Infinity;
+      const isValidPrice = itemPrice >= min && itemPrice <= max;
 
-        window.addNewAdmin = function() {
-            const input = document.getElementById('newAdminEmail');
-            const newEmail = input.value.trim().toLowerCase();
-            if(!newEmail || !newEmail.includes('@')) {
-                alert("נא להזין כתובת אימייל תקינה.");
-                return;
-            }
+      // 2. סינון דירוג
+      const rating = parseFloat(p.evaluate_rate || "0");
+      const isValidRating = rating >= 4.0 || rating === 0;
 
-            let admins = window.getAdminsList();
-            if(!admins.includes(newEmail)) {
-                admins.push(newEmail);
-                localStorage.setItem("siteAdminsList", JSON.stringify(admins));
-                input.value = "";
-                window.renderAdminList();
-            } else {
-                alert("המייל הזה כבר מוגדר כמנהל במערכת.");
-            }
-        };
+      // 3. סינון רשימה שחורה על כותרות המוצרים (למקרה שהחיפוש היה תקין אבל עלה מוצר בעייתי)
+      const titleLower = (p.product_title || "").toLowerCase();
+      const hasBlacklistWord = blackList.some(word => titleLower.includes(word.toLowerCase()));
 
-        window.removeAdmin = function(emailToRemove) {
-            if(emailToRemove.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) return;
-            let admins = window.getAdminsList();
-            admins = admins.filter(email => email.toLowerCase() !== emailToRemove.toLowerCase());
-            localStorage.setItem("siteAdminsList", JSON.stringify(admins));
-            window.renderAdminList();
-        };
+      return isValidPrice && isValidRating && !hasBlacklistWord;
+    });
 
-        // ---- ניהול עיצוב ותוכן ----
-        window.loadSiteSettings = function() {
-            const savedLogoText = localStorage.getItem("siteLogoText") || "המציאות שפשוט חבל לפספס";
-            const savedLogoImg = localStorage.getItem("siteLogoImgUrl") || "";
-            const savedSearchPlaceholder = localStorage.getItem("siteSearchPlaceholder") || "רשמו מוצר לחיפוש...";
-            const savedTitle = localStorage.getItem("siteMainTitle") || "חפשו את הדיל שלכם";
-            const savedDesc = localStorage.getItem("siteDescText") || "מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.";
+    products = products.slice(0, 10);
+    res.json(products);
 
-            // לוגו טקסט או תמונה
-            if(savedLogoImg) {
-                document.getElementById('siteLogoDisplay').innerHTML = `<img src="${savedLogoImg}" class="h-10 object-contain" alt="Logo">`;
-            } else {
-                document.getElementById('siteLogoDisplay').innerText = savedLogoText;
-            }
-            document.getElementById('adminLogoText').value = savedLogoText;
-            document.getElementById('adminLogoImgUrl').value = savedLogoImg;
-            
-            // פלייסחולדר לחיפוש
-            document.getElementById('searchInput').placeholder = savedSearchPlaceholder;
-            document.getElementById('adminSearchPlaceholder').value = savedSearchPlaceholder;
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-            // טקסטים באמצע העמוד
-            document.getElementById('siteTitleDisplay').innerText = savedTitle;
-            document.getElementById('adminMainTitle').value = savedTitle;
-            document.getElementById('siteDescDisplay').innerText = savedDesc;
-            document.getElementById('adminDesc').value = savedDesc;
-        };
-        window.loadSiteSettings();
+function generateSign(params, secret) {
+  const sorted = Object.keys(params).sort();
+  let base = secret;
+  sorted.forEach(key => { base += key + params[key]; });
+  base += secret;
+  return crypto.createHash("md5").update(base).digest("hex").toUpperCase();
+}
 
-        window.saveSiteSettings = function() {
-            localStorage.setItem("siteLogoText", document.getElementById('adminLogoText').value);
-            localStorage.setItem("siteLogoImgUrl", document.getElementById('adminLogoImgUrl').value);
-            localStorage.setItem("siteSearchPlaceholder", document.getElementById('adminSearchPlaceholder').value);
-            localStorage.setItem("siteMainTitle", document.getElementById('adminMainTitle').value);
-            localStorage.setItem("siteDescText", document.getElementById('adminDesc').value);
-            window.loadSiteSettings();
-        };
-
-        // ---- התחברות ואימות ----
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.isLoggedIn = true;
-                const firstName = user.displayName ? user.displayName.split(' ')[0] : 'משתמש';
-                
-                document.getElementById('userAuthArea').innerHTML = `
-                    <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold">
-                        <i class="fa-solid fa-circle-user"></i> ${firstName}
-                        <button onclick="window.handleLogout()" class="ml-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
-                    </div>
-                `;
-
-                const currentAdmins = window.getAdminsList();
-                if(user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase() || currentAdmins.includes(user.email.toLowerCase())) {
-                    document.getElementById('adminBtn').classList.remove('hidden');
-                    window.renderAdminList(); 
-                } else {
-                    document.getElementById('adminBtn').classList.add('hidden');
-                }
-
-            } else {
-                window.isLoggedIn = false;
-                document.getElementById('adminBtn').classList.add('hidden');
-                document.getElementById('userAuthArea').innerHTML = `
-                    <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-brands fa-google text-blue-500"></i> התחבר
-                    </button>
-                `;
-            }
-        });
-
-        window.handleGoogleLogin = async function() {
-            try {
-                await signInWithPopup(auth, provider);
-                window.isLoggedIn = true;
-                document.getElementById('loginModal').classList.add('hidden');
-                
-                if (window.pendingProductLink) {
-                    window.open(window.pendingProductLink, '_blank');
-                    window.pendingProductLink = "";
-                }
-            } catch (error) {
-                console.error("שגיאת התחברות:", error);
-            }
-        };
-
-        window.handleLogout = function() {
-            signOut(auth).then(() => { window.location.reload(); });
-        };
-
-        window.searchProducts = async function(isNewSearch) {
-            const input = document.getElementById('searchInput').value.trim();
-            if (!input) return;
-
-            document.getElementById('welcomeSection').classList.add('hidden');
-            document.getElementById('filterMessage').classList.add('hidden');
-
-            if (isNewSearch) {
-                window.currentPage = 1;
-                window.currentQuery = input;
-                window.currentMin = document.getElementById('minPrice').value;
-                window.currentMax = document.getElementById('maxPrice').value;
-                document.getElementById('results').innerHTML = "";
-                document.getElementById('pagination').classList.add('hidden');
-            } else {
-                window.currentPage++;
-            }
-
-            document.getElementById('loader').classList.remove('hidden');
-
-            try {
-                let url = `/api/search?q=${encodeURIComponent(window.currentQuery)}&page=${window.currentPage}`;
-                if (window.currentMin) url += `&min=${window.currentMin}`;
-                if (window.currentMax) url += `&max=${window.currentMax}`;
-
-                const response = await fetch(url);
-                const products = await response.json();
-                
-                document.getElementById('loader').classList.add('hidden');
-
-                if (response.status !== 200) {
-                    if(products.error === "החיפוש שלכם לא תואם את הגדרות הסינון") {
-                        document.getElementById('filterMessage').innerText = products.error;
-                        document.getElementById('filterMessage').classList.remove('hidden');
-                    } else {
-                        alert(products.error || "שגיאה בטעינת פריטים");
-                    }
-                    return;
-                }
-
-                if (!products || products.length === 0) {
-                    if (isNewSearch) {
-                        document.getElementById('results').innerHTML = `
-                            <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-gray-100">
-                                <i class="fa-solid fa-box-open text-4xl text-gray-200 mb-3"></i>
-                                <p class="text-gray-500 font-medium">לא נמצאו תוצאות מתאימות בטווח הזה.</p>
-                            </div>`;
-                    }
-                    return;
-                }
-
-                renderItems(products);
-                document.getElementById('pagination').classList.remove('hidden');
-            } catch (e) {
-                document.getElementById('loader').classList.add('hidden');
-                alert("שגיאה בתקשורת עם השרת.");
-            }
-        };
-
-        function renderItems(products) {
-            const grid = document.getElementById('results');
-            products.forEach(p => {
-                const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
-                const card = `
-                    <div class="product-card bg-white rounded-2xl p-4 border border-gray-200 flex flex-col shadow-sm">
-                        <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
-                            <img src="${p.product_main_image_url}" class="w-full h-40 object-cover">
-                        </div>
-                        <h3 class="text-gray-800 font-semibold text-sm mb-3 line-clamp-2 h-10 leading-tight">${p.product_title}</h3>
-                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                            <div class="text-xl font-extrabold text-green-600">₪${price}</div>
-                            <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
-                                צפייה בדיל
-                            </button>
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += card;
-            });
-        }
-
-        window.handleProductClick = function(link) {
-            if (window.isLoggedIn) {
-                window.open(link, '_blank');
-            } else {
-                window.pendingProductLink = link;
-                document.getElementById('loginModal').classList.remove('hidden');
-            }
-        };
-
-        window.toggleAdminPanel = function() { document.getElementById('adminPanel').classList.toggle('hidden'); };
-        
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') window.searchProducts(true);
-        });
-    </script>
-</body>
-</html>
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
