@@ -68,9 +68,11 @@
                     <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="רשמו מוצר לחיפוש..." class="w-full p-2 bg-transparent outline-none text-base sm:text-lg text-gray-800">
                 </div>
-                <div class="flex items-center gap-2 px-2 border-r border-gray-200">
-                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מינימום ₪</span>
+                <div class="flex items-center gap-2 px-2 border-r border-l border-gray-200">
+                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מ-₪</span>
                     <input type="number" id="minPrice" placeholder="0" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
+                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">עד-₪</span>
+                    <input type="number" id="maxPrice" placeholder="MAX" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
                 </div>
                 <button onclick="window.searchProducts(true)" class="bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition font-bold shadow-sm active:scale-95 whitespace-nowrap">
                     חפש דילים
@@ -83,13 +85,12 @@
         <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl text-center relative">
             <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-100 text-gray-900">
-                <i class="fa-solid fa-shield-halved text-2xl"></i>
+                <i class="fa-solid fa-lock text-2xl"></i>
             </div>
-            <h3 class="text-2xl font-black text-gray-950 mb-2">חשיפת הקישור החסוי</h3>
-            <p class="text-gray-500 text-sm mb-8 leading-relaxed">כדי לעבור לעמוד המוצר בעליאקספרס ולקבל את מחיר ההנחה, יש להזדהות בקליק קצר עם גוגל.</p>
+            <h3 class="text-xl font-black text-gray-950 mb-4">כדי לעבור למוצר בעלי קספרס יש להתחבר</h3>
             <button onclick="window.handleGoogleLogin()" class="w-full bg-white border border-gray-300 text-gray-700 py-3.5 px-4 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-3 shadow-sm active:scale-98">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.41 3.66 1.48 7.56l3.8 2.94C6.23 7.39 8.89 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.28 1.48-1.12 2.74-2.38 3.58l3.7 2.87c2.16-1.99 3.41-4.92 3.41-8.6z"/><path fill="#FBBC05" d="M5.28 14.51c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.48 7.56C.54 9.47 0 11.62 0 13.9s.54 4.43 1.48 6.34l3.8-2.93z"/><path fill="#34A353" d="M12 23c3.24 0 5.97-1.08 7.96-2.91l-3.7-2.87c-1.03.69-2.34 1.1-4.26 1.1-3.11 0-5.77-2.35-6.72-5.46l-3.8 2.93C3.41 20.34 7.35 23 12 23z"/></svg>
-                התחברות מהירה עם Google
+                התחבר עם Google
             </button>
         </div>
     </div>
@@ -101,6 +102,18 @@
         </div>
         
         <div class="flex-grow space-y-6">
+
+            <div class="grid grid-cols-2 gap-3 mb-2">
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
+                    <span class="block text-[10px] text-gray-400 mb-1">משתמשים רשומים</span>
+                    <span class="text-xl font-bold text-white">0</span>
+                </div>
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
+                    <span class="block text-[10px] text-gray-400 mb-1">חיפושים שבוצעו</span>
+                    <span class="text-xl font-bold text-white">0</span>
+                </div>
+                <div class="col-span-2 text-[10px] text-center text-orange-400">הנתונים יתעדכנו לאחר חיבור מלא ל-Database</div>
+            </div>
             
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
                 <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> הרשאות ניהול</h4>
@@ -114,16 +127,24 @@
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
                 <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב ותוכן</h4>
                 <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (לוגו עליון):</label>
-                    <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" value="המציאות שפשוט חבל לפספס">
+                    <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (לוגו טקסט):</label>
+                    <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="המציאות שפשוט חבל לפספס">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">תמונת לוגו (הדבק קישור, מחליף את הטקסט):</label>
+                    <input type="text" id="adminLogoImgUrl" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="https://example.com/logo.png">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 font-bold block mb-1">טקסט בתוך שורת החיפוש:</label>
+                    <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="רשמו מוצר לחיפוש...">
                 </div>
                 <div>
                     <label class="text-xs text-gray-400 font-bold block mb-1">כותרת ראשית (אמצע):</label>
-                    <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" value="חפשו את הדיל שלכם">
+                    <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="text-xs text-gray-400 font-bold block mb-1">תיאור תחת הכותרת:</label>
-                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none resize-none focus:border-blue-500">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</textarea>
+                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none resize-none focus:border-blue-500"></textarea>
                 </div>
                 <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold transition mt-2">שמור ועדכן אתר</button>
             </div>
@@ -136,7 +157,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         // ==========================================
-        // המייל שלך - המנהל הראשי שאי אפשר למחוק
         const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
         // ==========================================
 
@@ -157,6 +177,7 @@
         window.currentPage = 1;
         window.currentQuery = "";
         window.currentMin = "";
+        window.currentMax = "";
         window.isLoggedIn = false;
         window.pendingProductLink = "";
 
@@ -164,7 +185,7 @@
         window.getAdminsList = function() {
             let admins = localStorage.getItem("siteAdminsList");
             if (admins) return JSON.parse(admins);
-            return [MASTER_ADMIN_EMAIL]; // אם אין כלום, החזר את המנהל הראשי
+            return [MASTER_ADMIN_EMAIL]; 
         };
 
         window.renderAdminList = function() {
@@ -210,29 +231,39 @@
             window.renderAdminList();
         };
 
-        // ---- ניהול עיצוב ----
+        // ---- ניהול עיצוב ותוכן ----
         window.loadSiteSettings = function() {
-            const savedLogo = localStorage.getItem("siteLogoText");
-            const savedTitle = localStorage.getItem("siteMainTitle");
-            const savedDesc = localStorage.getItem("siteDescText");
+            const savedLogoText = localStorage.getItem("siteLogoText") || "המציאות שפשוט חבל לפספס";
+            const savedLogoImg = localStorage.getItem("siteLogoImgUrl") || "";
+            const savedSearchPlaceholder = localStorage.getItem("siteSearchPlaceholder") || "רשמו מוצר לחיפוש...";
+            const savedTitle = localStorage.getItem("siteMainTitle") || "חפשו את הדיל שלכם";
+            const savedDesc = localStorage.getItem("siteDescText") || "מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.";
 
-            if(savedLogo) {
-                document.getElementById('siteLogoDisplay').innerText = savedLogo;
-                document.getElementById('adminLogoText').value = savedLogo;
+            // לוגו טקסט או תמונה
+            if(savedLogoImg) {
+                document.getElementById('siteLogoDisplay').innerHTML = `<img src="${savedLogoImg}" class="h-10 object-contain" alt="Logo">`;
+            } else {
+                document.getElementById('siteLogoDisplay').innerText = savedLogoText;
             }
-            if(savedTitle) {
-                document.getElementById('siteTitleDisplay').innerText = savedTitle;
-                document.getElementById('adminMainTitle').value = savedTitle;
-            }
-            if(savedDesc) {
-                document.getElementById('siteDescDisplay').innerText = savedDesc;
-                document.getElementById('adminDesc').value = savedDesc;
-            }
+            document.getElementById('adminLogoText').value = savedLogoText;
+            document.getElementById('adminLogoImgUrl').value = savedLogoImg;
+            
+            // פלייסחולדר לחיפוש
+            document.getElementById('searchInput').placeholder = savedSearchPlaceholder;
+            document.getElementById('adminSearchPlaceholder').value = savedSearchPlaceholder;
+
+            // טקסטים באמצע העמוד
+            document.getElementById('siteTitleDisplay').innerText = savedTitle;
+            document.getElementById('adminMainTitle').value = savedTitle;
+            document.getElementById('siteDescDisplay').innerText = savedDesc;
+            document.getElementById('adminDesc').value = savedDesc;
         };
         window.loadSiteSettings();
 
         window.saveSiteSettings = function() {
             localStorage.setItem("siteLogoText", document.getElementById('adminLogoText').value);
+            localStorage.setItem("siteLogoImgUrl", document.getElementById('adminLogoImgUrl').value);
+            localStorage.setItem("siteSearchPlaceholder", document.getElementById('adminSearchPlaceholder').value);
             localStorage.setItem("siteMainTitle", document.getElementById('adminMainTitle').value);
             localStorage.setItem("siteDescText", document.getElementById('adminDesc').value);
             window.loadSiteSettings();
@@ -251,11 +282,10 @@
                     </div>
                 `;
 
-                // בדיקה אם המשתמש הוא מנהל (מופיע ברשימה)
                 const currentAdmins = window.getAdminsList();
-                if(currentAdmins.includes(user.email.toLowerCase())) {
+                if(user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase() || currentAdmins.includes(user.email.toLowerCase())) {
                     document.getElementById('adminBtn').classList.remove('hidden');
-                    window.renderAdminList(); // רנדור הרשימה כשמנהל מתחבר
+                    window.renderAdminList(); 
                 } else {
                     document.getElementById('adminBtn').classList.add('hidden');
                 }
@@ -301,6 +331,7 @@
                 window.currentPage = 1;
                 window.currentQuery = input;
                 window.currentMin = document.getElementById('minPrice').value;
+                window.currentMax = document.getElementById('maxPrice').value;
                 document.getElementById('results').innerHTML = "";
                 document.getElementById('pagination').classList.add('hidden');
             } else {
@@ -312,6 +343,7 @@
             try {
                 let url = `/api/search?q=${encodeURIComponent(window.currentQuery)}&page=${window.currentPage}`;
                 if (window.currentMin) url += `&min=${window.currentMin}`;
+                if (window.currentMax) url += `&max=${window.currentMax}`;
 
                 const response = await fetch(url);
                 const products = await response.json();
