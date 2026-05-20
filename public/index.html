@@ -20,7 +20,7 @@
     <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div id="siteLogoDisplay" class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <div id="siteLogoDisplay" class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent flex items-center h-10">
                     המציאות שפשוט חבל לפספס
                 </div>
             </div>
@@ -112,7 +112,7 @@
                     <span class="block text-[10px] text-gray-400 mb-1">חיפושים שבוצעו</span>
                     <span class="text-xl font-bold text-white">0</span>
                 </div>
-                <div class="col-span-2 text-[10px] text-center text-orange-400">הנתונים יתעדכנו לאחר חיבור מלא ל-Database</div>
+                <div class="col-span-2 text-[10px] text-center text-orange-400">הנתונים יתעדכנו לאחר חיבור ל-Database</div>
             </div>
             
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
@@ -130,10 +130,13 @@
                     <label class="text-xs text-gray-400 font-bold block mb-1">שם האתר (לוגו טקסט):</label>
                     <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="המציאות שפשוט חבל לפספס">
                 </div>
-                <div>
-                    <label class="text-xs text-gray-400 font-bold block mb-1">תמונת לוגו (הדבק קישור, מחליף את הטקסט):</label>
-                    <input type="text" id="adminLogoImgUrl" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="https://example.com/logo.png">
+                
+                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700">
+                    <label class="text-xs text-gray-400 font-bold block mb-2">תמונת לוגו (תחליף את הטקסט):</label>
+                    <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer">
+                    <button onclick="window.clearLogo()" class="text-[11px] text-red-400 hover:text-red-300 mt-3 flex items-center gap-1 transition"><i class="fa-solid fa-trash-can"></i> מחק תמונה והחזר טקסט</button>
                 </div>
+
                 <div>
                     <label class="text-xs text-gray-400 font-bold block mb-1">טקסט בתוך שורת החיפוש:</label>
                     <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none focus:border-blue-500" placeholder="רשמו מוצר לחיפוש...">
@@ -146,7 +149,7 @@
                     <label class="text-xs text-gray-400 font-bold block mb-1">תיאור תחת הכותרת:</label>
                     <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white outline-none resize-none focus:border-blue-500"></textarea>
                 </div>
-                <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold transition mt-2">שמור ועדכן אתר</button>
+                <button onclick="window.saveSiteSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-bold transition mt-2 shadow-lg">שמור ועדכן אתר</button>
             </div>
             
         </div>
@@ -234,25 +237,23 @@
         // ---- ניהול עיצוב ותוכן ----
         window.loadSiteSettings = function() {
             const savedLogoText = localStorage.getItem("siteLogoText") || "המציאות שפשוט חבל לפספס";
-            const savedLogoImg = localStorage.getItem("siteLogoImgUrl") || "";
+            const savedLogoImgBase64 = localStorage.getItem("siteLogoImgBase64") || "";
             const savedSearchPlaceholder = localStorage.getItem("siteSearchPlaceholder") || "רשמו מוצר לחיפוש...";
             const savedTitle = localStorage.getItem("siteMainTitle") || "חפשו את הדיל שלכם";
             const savedDesc = localStorage.getItem("siteDescText") || "מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.";
 
-            // לוגו טקסט או תמונה
-            if(savedLogoImg) {
-                document.getElementById('siteLogoDisplay').innerHTML = `<img src="${savedLogoImg}" class="h-10 object-contain" alt="Logo">`;
+            // לוגו: אם יש תמונה שמורה, הצג אותה. אם לא, הצג טקסט.
+            if(savedLogoImgBase64) {
+                document.getElementById('siteLogoDisplay').innerHTML = `<img src="${savedLogoImgBase64}" class="h-10 w-auto object-contain" alt="Logo">`;
             } else {
                 document.getElementById('siteLogoDisplay').innerText = savedLogoText;
             }
-            document.getElementById('adminLogoText').value = savedLogoText;
-            document.getElementById('adminLogoImgUrl').value = savedLogoImg;
             
-            // פלייסחולדר לחיפוש
+            document.getElementById('adminLogoText').value = savedLogoText;
+            
             document.getElementById('searchInput').placeholder = savedSearchPlaceholder;
             document.getElementById('adminSearchPlaceholder').value = savedSearchPlaceholder;
 
-            // טקסטים באמצע העמוד
             document.getElementById('siteTitleDisplay').innerText = savedTitle;
             document.getElementById('adminMainTitle').value = savedTitle;
             document.getElementById('siteDescDisplay').innerText = savedDesc;
@@ -260,13 +261,34 @@
         };
         window.loadSiteSettings();
 
+        // שמירת הגדרות (כולל המרת תמונה ל-Base64)
         window.saveSiteSettings = function() {
             localStorage.setItem("siteLogoText", document.getElementById('adminLogoText').value);
-            localStorage.setItem("siteLogoImgUrl", document.getElementById('adminLogoImgUrl').value);
             localStorage.setItem("siteSearchPlaceholder", document.getElementById('adminSearchPlaceholder').value);
             localStorage.setItem("siteMainTitle", document.getElementById('adminMainTitle').value);
             localStorage.setItem("siteDescText", document.getElementById('adminDesc').value);
+
+            const fileInput = document.getElementById('adminLogoUpload');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem("siteLogoImgBase64", e.target.result); // שמירת התמונה כקוד
+                    window.loadSiteSettings();
+                    alert("ההגדרות והתמונה נשמרו בהצלחה!");
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                window.loadSiteSettings();
+                alert("ההגדרות נשמרו בהצלחה!");
+            }
+        };
+
+        // מחיקת הלוגו מהזיכרון
+        window.clearLogo = function() {
+            localStorage.removeItem("siteLogoImgBase64");
+            document.getElementById('adminLogoUpload').value = "";
             window.loadSiteSettings();
+            alert("התמונה הוסרה. כעת מוצג הלוגו הטקסטואלי.");
         };
 
         // ---- התחברות ואימות ----
