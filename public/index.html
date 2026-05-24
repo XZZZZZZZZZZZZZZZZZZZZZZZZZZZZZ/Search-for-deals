@@ -57,7 +57,7 @@
         <div id="filterMessage" class="hidden text-center mb-6 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl max-w-2xl mx-auto"></div>
         <div id="loader" class="hidden text-center py-20">
             <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
-            <p class="mt-4 text-gray-400 text-sm font-medium">שולף תוצאות מהענן...</p>
+            <p class="mt-4 text-gray-400 text-sm font-medium">מחפש את הדילים הטובים בשבילכם...</p>
         </div>
         <div id="results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
         <div id="pagination" class="hidden text-center mt-12 mb-8">
@@ -229,7 +229,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // ============== מנהל ראשי ==============
         const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
@@ -664,6 +664,13 @@
                 
                 window.saveRecentSearch(input);
                 setDoc(doc(db, "system", "analytics"), { searches: increment(1) }, { merge: true });
+
+                // שמירת חיפושים למשתמש מחובר (מעקב למייל)
+                if (window.isLoggedIn && auth.currentUser) {
+                    const userRef = doc(db, "users", auth.currentUser.uid);
+                    setDoc(userRef, { savedSearches: arrayUnion(input), lastActive: new Date().toISOString() }, { merge: true }).catch(e => console.log(e));
+                }
+
             } else { window.currentPage++; }
 
             document.getElementById('loader').classList.remove('hidden');
