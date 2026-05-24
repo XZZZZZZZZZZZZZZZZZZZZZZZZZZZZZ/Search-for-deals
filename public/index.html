@@ -23,9 +23,12 @@
             <div class="flex items-center gap-3">
                 <div id="siteLogoDisplay" class="flex items-center gap-3"></div>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="adminBtn" onclick="window.toggleAdminPanel()" class="hidden text-xs text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg font-bold transition shadow-sm">
-                    <i class="fa-solid fa-sliders ml-1"></i> ניהול
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a href="mailto:dealsthatare@gmail.com?subject=פניה לטירוף דיל בנושא " class="text-xs sm:text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full transition flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-blue-500"></i> <span class="hidden sm:inline">צור קשר</span>
+                </a>
+                <button id="adminBtn" onclick="window.toggleAdminPanel()" class="hidden text-xs text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded-full font-bold transition shadow-sm">
+                    <i class="fa-solid fa-sliders"></i>
                 </button>
                 <div id="userAuthArea">
                     <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2">
@@ -49,17 +52,20 @@
 
         <div id="imageSliderContainer" class="hidden max-w-4xl mx-auto mb-10 relative rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-gray-900 h-48 md:h-64">
             <div id="sliderWrapper" class="w-full h-full relative">
-                <img id="sliderImage" src="" class="w-full h-full object-cover slider-img opacity-100" alt="Promo Banner">
+                <img id="sliderImage" src="" class="w-full h-full object-cover slider-img opacity-100">
             </div>
             <div id="sliderDots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10"></div>
         </div>
 
         <div id="filterMessage" class="hidden text-center mb-6 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl max-w-2xl mx-auto"></div>
+        
         <div id="loader" class="hidden text-center py-20">
             <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-900 border-t-transparent"></div>
             <p class="mt-4 text-gray-400 text-sm font-medium">מחפש את הדילים הטובים בשבילכם...</p>
         </div>
+        
         <div id="results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+        
         <div id="pagination" class="hidden text-center mt-12 mb-8">
             <button onclick="window.searchProducts(false)" class="bg-white border border-gray-200 text-gray-800 px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm text-sm">
                 הצג תוצאות נוספות
@@ -106,6 +112,16 @@
         </div>
     </div>
 
+    <div id="reportModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative border border-gray-100">
+            <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-xl font-black text-gray-950 mb-3 text-center"><i class="fa-solid fa-flag text-red-500 ml-1"></i> דיווח על מוצר</h3>
+            <p class="text-gray-500 text-xs mb-4 text-center">ראית משהו לא תקין? נשמח לדעת.</p>
+            <textarea id="reportReasonInput" rows="3" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm mb-4 outline-none focus:border-red-400" placeholder="פרט כאן את סיבת הדיווח..."></textarea>
+            <button onclick="window.submitProductReport()" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">שלח דיווח</button>
+        </div>
+    </div>
+
     <div id="campaignModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl text-center relative border border-gray-100">
             <button onclick="document.getElementById('campaignModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -114,9 +130,7 @@
             </div>
             <h3 id="campaignTitleDisplay" class="text-2xl font-black text-gray-950 mb-3"></h3>
             <p id="campaignTextDisplay" class="text-gray-600 text-sm leading-relaxed mb-6"></p>
-            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">
-                הבנתי, תודה!
-            </button>
+            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">הבנתי, תודה!</button>
         </div>
     </div>
 
@@ -140,76 +154,76 @@
         </div>
         
         <div class="flex-grow space-y-6 pb-20">
-            <div class="text-center text-xs text-green-400 mb-2 font-bold bg-green-900/30 py-2 rounded-lg border border-green-800/50">
-                <i class="fa-solid fa-database mr-1"></i> מחובר בזמן אמת ל-Firestore
-            </div>
-            
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">משתמשים רשומים</span>
+                    <span class="block text-[10px] text-gray-400 mb-1">רשומים</span>
                     <span id="adminStatUsers" class="text-xl font-bold text-white">0</span>
                 </div>
                 <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">כניסות לאתר</span>
+                    <span class="block text-[10px] text-gray-400 mb-1">כניסות</span>
                     <span id="adminStatVisits" class="text-xl font-bold text-white">0</span>
                 </div>
                 <div class="col-span-2 bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-                    <span class="block text-[10px] text-gray-400 mb-1">חיפושים שבוצעו</span>
+                    <span class="block text-[10px] text-gray-400 mb-1">חיפושים</span>
                     <span id="adminStatSearches" class="text-xl font-bold text-white">0</span>
                 </div>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב האתר (DB)</h4>
+                <h4 class="text-sm font-bold text-red-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-triangle-exclamation ml-1"></i> דיווחי משתמשים</h4>
+                <div id="adminReportsList" class="space-y-3 mt-2 max-h-60 overflow-y-auto pr-1"></div>
+            </div>
+
+            <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
+                <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב האתר</h4>
                 <div>
-                    <label class="text-[11px] text-gray-400 block mb-1">שם האתר:</label>
+                    <label class="text-[11px] text-gray-400 block">שם האתר:</label>
                     <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block mb-1">תיאור קצר (מתחת לשם האתר למעלה):</label>
+                    <label class="text-[11px] text-gray-400 block">תיאור קצר (למעלה):</label>
                     <input type="text" id="adminNavDesc" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
                 <div class="bg-gray-900 p-3 rounded-lg border border-gray-700">
-                    <label class="text-[11px] text-gray-400 block mb-2">תמונת לוגו (נפתחת בלחיצה):</label>
-                    <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:py-1 file:px-2 file:bg-gray-700 file:text-white cursor-pointer">
-                    <button onclick="window.clearLogo()" class="text-[11px] text-red-400 hover:text-red-300 mt-2 flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> מחק תמונה</button>
+                    <label class="text-[11px] text-gray-400 block mb-2">לוגו:</label>
+                    <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white cursor-pointer">
+                    <button onclick="window.clearLogo()" class="text-[11px] text-red-400 mt-2"><i class="fa-solid fa-trash-can"></i> מחק</button>
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block mb-1">כותרת עמוד ראשית (באמצע):</label>
+                    <label class="text-[11px] text-gray-400 block">כותרת עמוד ראשית:</label>
                     <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block mb-1">תיאור תחת הכותרת:</label>
-                    <textarea id="adminDesc" rows="3" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white resize-none"></textarea>
+                    <label class="text-[11px] text-gray-400 block">תיאור תחת הכותרת:</label>
+                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white"></textarea>
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block mb-1">טקסט חיפוש:</label>
+                    <label class="text-[11px] text-gray-400 block">טקסט חיפוש:</label>
                     <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
-                <button onclick="window.saveSiteSettingsToDB()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold transition">שמור בענן</button>
+                <button onclick="window.saveSiteSettingsToDB()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold">שמור בענן</button>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-blue-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> ניהול מנהלים (DB)</h4>
+                <h4 class="text-sm font-bold text-blue-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-users-gear ml-1"></i> מנהלים</h4>
                 <div id="adminListDisplay" class="space-y-2 mt-2 max-h-40 overflow-y-auto pr-1"></div>
                 <div class="flex gap-2 mt-3">
-                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white" placeholder="מייל של מנהל נוסף...">
-                    <button onclick="window.addNewAdmin()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">הוסף</button>
+                    <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white" placeholder="מייל...">
+                    <button onclick="window.addNewAdmin()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">הוסף</button>
                 </div>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-green-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-images ml-1"></i> גלריית באנרים (DB)</h4>
+                <h4 class="text-sm font-bold text-green-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-images ml-1"></i> באנרים</h4>
                 <div>
-                    <label class="text-[11px] text-gray-300 block mb-1">הוסף תמונה (עד 8):</label>
-                    <input type="file" id="adminSliderUpload" accept="image/*" class="w-full text-xs text-gray-400 file:py-1 file:px-2 file:rounded file:bg-gray-700 file:text-white cursor-pointer">
-                    <button onclick="window.addSliderImageToDB()" class="w-full bg-green-600 hover:bg-green-700 text-white py-1.5 rounded text-xs font-bold transition mt-2">העלה לענן</button>
+                    <input type="file" id="adminSliderUpload" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white cursor-pointer">
+                    <button onclick="window.addSliderImageToDB()" class="w-full bg-green-600 text-white py-1.5 rounded text-xs font-bold mt-2">העלה</button>
                 </div>
                 <div id="adminSliderList" class="space-y-2 mt-2 max-h-40 overflow-y-auto pr-1"></div>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
-                <h4 class="text-sm font-bold text-orange-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-bullhorn ml-1"></i> קמפיין פופ-אפ (DB)</h4>
+                <h4 class="text-sm font-bold text-orange-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-bullhorn ml-1"></i> קמפיין פופ-אפ</h4>
                 <div class="flex items-center gap-2 py-1">
                     <input type="checkbox" id="adminCampaignActive" class="w-4 h-4 cursor-pointer">
                     <label for="adminCampaignActive" class="text-xs text-gray-200 font-bold">הפעל פופ-אפ</label>
@@ -231,9 +245,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // ============== מנהל ראשי ==============
         const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
-        // =======================================
 
         const firebaseConfig = {
             apiKey: "AIzaSyAFZXSNGr-1-8Q78mjDxaR0RAoh0yXxT48",
@@ -251,26 +263,63 @@
         const db = getFirestore(app);
 
         window.siteConfig = {
-            logoText: "המציאות שפשוט חבל לפספס",
-            navDesc: "דילים חמים מעליאקספרס",
-            logoBase64: "",
+            logoText: "המציאות שפשוט חבל לפספס", 
+            navDesc: "דילים חמים מעליאקספרס", 
+            logoBase64: "", 
             searchPlaceholder: "רשמו מוצר לחיפוש...",
-            mainTitle: "חפשו את הדיל שלכם",
+            mainTitle: "חפשו את הדיל שלכם", 
             mainDesc: "מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.",
             campaign: { active: false, title: "", text: "", btnText: "הבנתי", delay: 3, maxShows: 1, expiry: "" },
-            sliderImages: [],
+            sliderImages: [], 
             admins: [MASTER_ADMIN_EMAIL]
         };
+        
+        window.currentPage = 1; 
+        window.currentQuery = ""; 
+        window.isLoggedIn = false;
+        window.pendingProductLink = ""; 
+        window.reportingProductLink = "";
+        
+        // מערכת התראות קוליות
+        window.alertsEnabled = localStorage.getItem('userAlertsEnabled') === 'true';
+        const alertAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        
+        window.toggleAudioAlerts = function() {
+            window.alertsEnabled = !window.alertsEnabled;
+            localStorage.setItem('userAlertsEnabled', window.alertsEnabled);
+            updateAlertIcon();
+            if(window.alertsEnabled) {
+                alertAudio.play().catch(e => console.log(e));
+            }
+        };
+        
+        function updateAlertIcon() {
+            const btn = document.getElementById('audioAlertBtn');
+            if(!btn) return;
+            if(window.alertsEnabled) {
+                btn.innerHTML = `<i class="fa-solid fa-bell text-yellow-500"></i>`;
+                btn.classList.add('bg-yellow-50', 'border-yellow-200');
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-bell-slash text-gray-400"></i>`;
+                btn.classList.remove('bg-yellow-50', 'border-yellow-200');
+            }
+        }
+
+        // צפצוף כשעוזבים את החלון
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && window.alertsEnabled && window.currentQuery !== "") {
+                alertAudio.play().catch(e => console.log(e));
+            }
+        });
 
         window.checkAdminAccess = function() {
             const user = auth.currentUser;
-            if (user) {
-                const admins = window.siteConfig.admins || [MASTER_ADMIN_EMAIL];
-                if(admins.some(e => e.toLowerCase() === user.email.toLowerCase())) {
-                    document.getElementById('adminBtn').classList.remove('hidden');
-                } else {
-                    document.getElementById('adminBtn').classList.add('hidden');
-                }
+            const admins = window.siteConfig.admins || [MASTER_ADMIN_EMAIL];
+            if (user && admins.some(e => e.toLowerCase() === user.email.toLowerCase())) {
+                document.getElementById('adminBtn').classList.remove('hidden');
+                window.loadReportsForAdmin();
+            } else {
+                document.getElementById('adminBtn').classList.add('hidden');
             }
         };
 
@@ -278,7 +327,7 @@
             const listDiv = document.getElementById('adminListDisplay');
             if(!listDiv) return;
             const admins = window.siteConfig.admins || [MASTER_ADMIN_EMAIL];
-            listDiv.innerHTML = admins.map((email, i) => `
+            listDiv.innerHTML = admins.map((email) => `
                 <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800">
                     <span class="text-[11px] text-gray-300 truncate pl-2">${email}</span>
                     ${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() 
@@ -303,7 +352,7 @@
                     window.checkAdminAccess();
                 });
             } else {
-                alert("המנהל כבר קיים במערכת.");
+                alert("המנהל כבר קיים.");
             }
         };
 
@@ -316,18 +365,92 @@
             });
         };
 
+        window.openReportModal = function(link) {
+            if (!window.isLoggedIn) {
+                return document.getElementById('loginPromptModal').classList.remove('hidden');
+            }
+            window.reportingProductLink = link;
+            document.getElementById('reportReasonInput').value = "";
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        window.submitProductReport = async function() {
+            const reason = document.getElementById('reportReasonInput').value.trim();
+            if(!reason) return alert("אנא הזן סיבה לדיווח.");
+            
+            const reportData = {
+                id: Date.now().toString(),
+                date: new Date().toLocaleString('he-IL'),
+                email: auth.currentUser.email,
+                name: auth.currentUser.displayName || 'משתמש',
+                link: window.reportingProductLink,
+                reason: reason,
+                status: 'open'
+            };
+
+            try {
+                const ref = doc(db, "system", "reports_data");
+                await setDoc(ref, { reports: arrayUnion(reportData) }, { merge: true });
+                alert("הדיווח נשלח בהצלחה!");
+                document.getElementById('reportModal').classList.add('hidden');
+            } catch(e) {
+                alert("שגיאה בשליחת הדיווח.");
+            }
+        };
+
+        window.loadReportsForAdmin = async function() {
+            try {
+                const snap = await getDoc(doc(db, "system", "reports_data"));
+                const listDiv = document.getElementById('adminReportsList');
+                if(!snap.exists() || !snap.data().reports || snap.data().reports.length === 0) {
+                    listDiv.innerHTML = `<div class="text-xs text-gray-500 text-center py-4">אין דיווחים.</div>`;
+                    return;
+                }
+                const reports = snap.data().reports.reverse();
+                listDiv.innerHTML = reports.map(r => `
+                    <div class="bg-white p-3 rounded-xl border ${r.status==='open' ? 'border-red-300 shadow-sm' : 'border-gray-200 opacity-60'}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] text-gray-400 font-bold">${r.date}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full ${r.status==='open' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${r.status==='open' ? 'פתוח' : 'טופל'}</span>
+                        </div>
+                        <div class="text-xs text-gray-800 mb-1"><strong>דווח ע"י:</strong> ${r.name}</div>
+                        <div class="text-[10px] text-gray-500 mb-2">${r.email}</div>
+                        <div class="text-xs text-gray-900 bg-gray-50 p-2 rounded mb-2">${r.reason}</div>
+                        <div class="flex gap-2">
+                            <a href="${r.link}" target="_blank" class="flex-1 bg-blue-50 text-blue-600 text-[11px] font-bold py-1.5 rounded text-center">צפה במוצר</a>
+                            ${r.status==='open' ? `<button onclick="window.markReportHandled('${r.id}')" class="flex-1 bg-green-500 text-white text-[11px] font-bold py-1.5 rounded">סמן כטופל</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                console.log(e);
+            }
+        };
+
+        window.markReportHandled = async function(id) {
+            try {
+                const ref = doc(db, "system", "reports_data");
+                const snap = await getDoc(ref);
+                let reports = snap.data().reports || [];
+                reports = reports.map(r => r.id === id ? {...r, status: 'closed'} : r);
+                await setDoc(ref, { reports: reports });
+                window.loadReportsForAdmin();
+            } catch(e) {
+                console.log(e);
+            }
+        };
+
         window.loadRecentSearches = function() {
             const container = document.getElementById('recentSearchesContainer');
             if (!window.isLoggedIn) {
                 container.classList.add('hidden');
                 return;
             }
-            const listDiv = document.getElementById('recentSearchesList');
             const searches = JSON.parse(localStorage.getItem('userRecentSearches') || '[]');
             if (searches.length > 0 && window.currentQuery === "") {
                 container.classList.remove('hidden');
-                listDiv.innerHTML = searches.map(term => `
-                    <button onclick="window.triggerRecentSearch('${term.replace(/'/g, "\\'")}')" class="bg-white border border-gray-200 hover:border-gray-400 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-full text-sm font-semibold transition shadow-sm">
+                document.getElementById('recentSearchesList').innerHTML = searches.map(term => `
+                    <button onclick="window.triggerRecentSearch('${term.replace(/'/g, "\\'")}')" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm">
                         ${term} <i class="fa-solid fa-magnifying-glass text-[10px] text-gray-400 ml-1"></i>
                     </button>
                 `).join('');
@@ -350,14 +473,6 @@
             window.searchProducts(true);
         };
 
-        window.trackVisit = async function() {
-            try {
-                const ref = doc(db, "system", "analytics");
-                await setDoc(ref, { visits: increment(1) }, { merge: true });
-            } catch (e) {}
-        };
-        window.trackVisit();
-
         window.updateAdminStats = async function() {
             try {
                 const snap = await getDoc(doc(db, "system", "analytics"));
@@ -367,83 +482,79 @@
                     document.getElementById('adminStatSearches').innerText = data.searches || 0;
                     document.getElementById('adminStatUsers').innerText = data.registeredUsers || 0;
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.log(e);
+            }
         };
 
         function compressImage(file, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = event => {
+            reader.onload = e => {
                 const img = new Image();
-                img.src = event.target.result;
+                img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const scaleSize = Math.min(1, 800 / img.width);
-                    canvas.width = img.width * scaleSize;
-                    canvas.height = img.height * scaleSize;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7)); 
+                    const scale = Math.min(1, 800 / img.width);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
                 };
             };
         }
 
         window.loadDataFromDB = async function() {
             try {
-                const docRef = doc(db, "system", "global_settings");
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "system", "global_settings"));
                 if (docSnap.exists()) {
                     window.siteConfig = { ...window.siteConfig, ...docSnap.data() };
                 }
                 applySettingsToUI();
                 window.initSlider();
-                window.checkAndShowCampaign();
                 window.loadRecentSearches();
+                window.checkAndShowCampaign();
                 window.checkAdminAccess();
             } catch (e) {
                 applySettingsToUI();
             }
+            try {
+                await setDoc(doc(db, "system", "analytics"), { visits: increment(1) }, { merge: true });
+            } catch(e){}
         };
 
         window.saveDataToDB = async function() {
             try {
                 await setDoc(doc(db, "system", "global_settings"), window.siteConfig);
                 applySettingsToUI();
-                alert("הנתונים נשמרו בענן בהצלחה!");
+                alert("נשמר בהצלחה!");
             } catch (e) {
-                alert("שגיאה בשמירת נתונים לענן.");
+                alert("שגיאה בשמירה.");
             }
         };
 
         function applySettingsToUI() {
             const conf = window.siteConfig;
+            document.getElementById('dynamicFavicon').href = conf.logoBase64 || "data:;base64,iVBORw0KGgo="; 
             
             let logoHTML = "";
-            if(conf.logoBase64) {
-                logoHTML += `<img src="${conf.logoBase64}" onclick="window.openEnlargedImage('${conf.logoBase64}')" class="h-10 w-auto object-contain shrink-0 rounded cursor-pointer hover:opacity-80 transition" title="לחץ להגדלה">`;
-                document.getElementById('dynamicFavicon').href = conf.logoBase64; 
-            } else {
-                document.getElementById('dynamicFavicon').href = "data:;base64,iVBORw0KGgo="; 
+            if (conf.logoBase64) {
+                logoHTML += `<img src="${conf.logoBase64}" onclick="window.openEnlargedImage('${conf.logoBase64}')" class="h-10 w-auto rounded cursor-pointer hover:opacity-80 transition">`;
             }
-            
-            logoHTML += `<div class="flex flex-col justify-center">
-                <span class="text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent leading-none">${conf.logoText}</span>
-                ${conf.navDesc ? `<span class="text-[10px] md:text-xs text-gray-500 font-medium mt-0.5">${conf.navDesc}</span>` : ''}
-            </div>`;
+            logoHTML += `<div class="flex flex-col justify-center"><span class="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent leading-none">${conf.logoText}</span>${conf.navDesc ? `<span class="text-[10px] md:text-xs text-gray-500 font-medium mt-0.5">${conf.navDesc}</span>` : ''}</div>`;
             
             document.getElementById('siteLogoDisplay').innerHTML = logoHTML;
             document.getElementById('pageTitle').innerText = conf.logoText;
-            
             document.getElementById('searchInput').placeholder = conf.searchPlaceholder;
             document.getElementById('siteTitleDisplay').innerText = conf.mainTitle;
             document.getElementById('siteDescDisplay').innerText = conf.mainDesc;
-
+            
             document.getElementById('adminLogoText').value = conf.logoText;
             document.getElementById('adminNavDesc').value = conf.navDesc || "";
             document.getElementById('adminSearchPlaceholder').value = conf.searchPlaceholder;
             document.getElementById('adminMainTitle').value = conf.mainTitle;
             document.getElementById('adminDesc').value = conf.mainDesc;
-
+            
             if(conf.campaign) {
                 document.getElementById('adminCampaignActive').checked = conf.campaign.active;
                 document.getElementById('adminCampaignTitle').value = conf.campaign.title;
@@ -462,27 +573,27 @@
             document.getElementById('imageEnlargeModal').classList.remove('hidden');
         };
 
+        window.clearLogo = function() {
+            window.siteConfig.logoBase64 = "";
+            window.saveDataToDB();
+        };
+
         window.saveSiteSettingsToDB = function() {
             window.siteConfig.logoText = document.getElementById('adminLogoText').value;
             window.siteConfig.navDesc = document.getElementById('adminNavDesc').value;
             window.siteConfig.searchPlaceholder = document.getElementById('adminSearchPlaceholder').value;
             window.siteConfig.mainTitle = document.getElementById('adminMainTitle').value;
             window.siteConfig.mainDesc = document.getElementById('adminDesc').value;
-
+            
             const fileInput = document.getElementById('adminLogoUpload');
             if (fileInput.files && fileInput.files[0]) {
-                compressImage(fileInput.files[0], (compressedBase64) => {
-                    window.siteConfig.logoBase64 = compressedBase64;
+                compressImage(fileInput.files[0], (base64) => {
+                    window.siteConfig.logoBase64 = base64;
                     window.saveDataToDB();
                 });
             } else {
                 window.saveDataToDB();
             }
-        };
-
-        window.clearLogo = function() {
-            window.siteConfig.logoBase64 = "";
-            window.saveDataToDB();
         };
 
         window.saveCampaignToDB = function() {
@@ -500,16 +611,16 @@
         };
 
         window.addSliderImageToDB = function() {
-            const fileInput = document.getElementById('adminSliderUpload');
-            if (!fileInput.files || !fileInput.files[0]) return alert("אנא בחר קובץ.");
+            const f = document.getElementById('adminSliderUpload');
+            if (!f.files[0]) return;
             if (!window.siteConfig.sliderImages) window.siteConfig.sliderImages = [];
-            if (window.siteConfig.sliderImages.length >= 8) return alert("מקסימום 8 תמונות.");
-
-            compressImage(fileInput.files[0], (compressedBase64) => {
-                window.siteConfig.sliderImages.push(compressedBase64);
+            if (window.siteConfig.sliderImages.length >= 8) return alert("מקסימום 8.");
+            
+            compressImage(f.files[0], (base64) => {
+                window.siteConfig.sliderImages.push(base64);
                 window.saveDataToDB().then(() => {
-                    fileInput.value = "";
-                    window.initSlider(); 
+                    f.value = "";
+                    window.initSlider();
                 });
             });
         };
@@ -520,18 +631,13 @@
         };
 
         window.renderAdminSliderList = function() {
-            const listDiv = document.getElementById('adminSliderList');
-            if(!listDiv) return;
-            const images = window.siteConfig.sliderImages || [];
-            if(images.length === 0) {
-                listDiv.innerHTML = `<span class="text-xs text-gray-500 italic block">אין תמונות בגלריה.</span>`;
-                return;
-            }
-            listDiv.innerHTML = images.map((img, i) => `
+            const d = document.getElementById('adminSliderList');
+            if(!d) return;
+            d.innerHTML = (window.siteConfig.sliderImages || []).map((img, i) => `
                 <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800">
                     <img src="${img}" class="w-14 h-8 object-cover rounded">
                     <span class="text-[11px] text-gray-400">תמונה ${i+1}</span>
-                    <button onclick="window.deleteSliderImageFromDB(${i})" class="text-red-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    <button onclick="window.deleteSliderImageFromDB(${i})" class="text-red-400"><i class="fa-solid fa-trash-can text-xs"></i></button>
                 </div>
             `).join('');
         };
@@ -542,44 +648,37 @@
         window.initSlider = function() {
             const images = window.siteConfig.sliderImages || [];
             const container = document.getElementById('imageSliderContainer');
-            if(images.length === 0) {
-                if(container) container.classList.add('hidden');
-                return;
-            }
+            if(images.length === 0) return container && container.classList.add('hidden');
             if(container && window.currentQuery === "") container.classList.remove('hidden');
-
-            const dotsContainer = document.getElementById('sliderDots');
-            dotsContainer.innerHTML = images.map((_, i) => `<div id="dot-${i}" class="w-2 h-2 rounded-full bg-white/40 transition-all"></div>`).join('');
-
+            
+            document.getElementById('sliderDots').innerHTML = images.map((_, i) => `<div id="dot-${i}" class="w-2 h-2 rounded-full bg-white/40"></div>`).join('');
             currentSliderIndex = 0;
             updateSliderDOM();
-
-            if(sliderInterval) clearInterval(sliderInterval);
-            let switchCount = 0;
-            const maxSwitches = 5 * images.length;
             
+            if(sliderInterval) clearInterval(sliderInterval);
             if(images.length > 1) {
+                let sc = 0;
                 sliderInterval = setInterval(() => {
-                    if(switchCount >= maxSwitches) return clearInterval(sliderInterval);
+                    if(sc >= 5 * images.length) return clearInterval(sliderInterval);
                     currentSliderIndex = (currentSliderIndex + 1) % images.length;
-                    switchCount++;
+                    sc++;
                     updateSliderDOM();
                 }, 3000);
             }
         };
 
         function updateSliderDOM() {
-            const imgElement = document.getElementById('sliderImage');
+            const img = document.getElementById('sliderImage');
             const images = window.siteConfig.sliderImages || [];
-            if(!imgElement || images.length === 0) return;
-
-            imgElement.style.opacity = "0.3";
+            if(!img || images.length === 0) return;
+            
+            img.style.opacity = "0.3";
             setTimeout(() => {
-                imgElement.src = images[currentSliderIndex];
-                imgElement.style.opacity = "1";
+                img.src = images[currentSliderIndex];
+                img.style.opacity = "1";
                 images.forEach((_, i) => {
                     const dot = document.getElementById(`dot-${i}`);
-                    if(dot) dot.className = i === currentSliderIndex ? "w-4 h-2 rounded-full bg-white transition-all" : "w-2 h-2 rounded-full bg-white/40 transition-all";
+                    if(dot) dot.className = i === currentSliderIndex ? "w-4 h-2 rounded-full bg-white" : "w-2 h-2 rounded-full bg-white/40";
                 });
             }, 150);
         }
@@ -600,40 +699,40 @@
             }, (cmp.delay || 3) * 1000);
         };
 
-        window.currentPage = 1; window.currentQuery = ""; window.currentMin = ""; window.currentMax = ""; window.isLoggedIn = false; window.pendingProductLink = "";
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.isLoggedIn = true;
-                window.loadRecentSearches(); 
+                window.loadRecentSearches();
                 
                 const firstName = user.displayName ? user.displayName.split(' ')[0] : 'משתמש';
                 document.getElementById('userAuthArea').innerHTML = `
-                    <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold">
-                        <i class="fa-solid fa-circle-user"></i> ${firstName}
-                        <button onclick="window.handleLogout()" class="ml-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold shadow-sm">
+                        <button onclick="window.toggleAudioAlerts()" id="audioAlertBtn" class="text-gray-400 hover:text-yellow-500 w-6 h-6 rounded-full flex items-center justify-center transition" title="התראות קוליות">
+                            <i class="fa-solid fa-bell-slash"></i>
+                        </button>
+                        <i class="fa-solid fa-circle-user border-r border-green-200 pr-2 ml-1"></i> ${firstName}
+                        <button onclick="window.handleLogout()" class="ml-1 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 `;
+                updateAlertIcon();
                 
-                const userRef = doc(db, "users", user.uid);
-                getDoc(userRef).then(snap => {
+                getDoc(doc(db, "users", user.uid)).then(snap => {
                     if(!snap.exists()) {
-                        setDoc(userRef, { email: user.email, name: user.displayName, joined: new Date().toISOString() });
+                        setDoc(doc(db, "users", user.uid), { email: user.email, name: user.displayName, joined: new Date().toISOString() });
                         setDoc(doc(db, "system", "analytics"), { registeredUsers: increment(1) }, { merge: true });
                     }
                 });
-
                 window.checkAdminAccess();
             } else {
                 window.isLoggedIn = false;
                 document.getElementById('adminBtn').classList.add('hidden');
-                document.getElementById('recentSearchesContainer').classList.add('hidden'); 
+                document.getElementById('recentSearchesContainer').classList.add('hidden');
                 
                 if (!localStorage.getItem("hasSeenLoginPrompt")) {
                     setTimeout(() => {
                         document.getElementById('loginPromptModal').classList.remove('hidden');
                         localStorage.setItem("hasSeenLoginPrompt", "true");
-                    }, 1500); 
+                    }, 1500);
                 }
             }
         });
@@ -642,95 +741,115 @@
             try {
                 await signInWithPopup(auth, provider);
                 document.getElementById('loginPromptModal').classList.add('hidden');
-                if (window.pendingProductLink) { window.open(window.pendingProductLink, '_blank'); window.pendingProductLink = ""; }
-            } catch (e) {}
+                if (window.pendingProductLink) {
+                    window.open(window.pendingProductLink, '_blank');
+                    window.pendingProductLink = "";
+                }
+            } catch (e) {
+                console.log(e);
+            }
         };
 
-        window.handleLogout = function() { signOut(auth).then(() => { window.location.reload(); }); };
+        window.handleLogout = function() {
+            signOut(auth).then(() => window.location.reload());
+        };
 
         window.searchProducts = async function(isNewSearch) {
             const input = document.getElementById('searchInput').value.trim();
             if (!input) return;
-
+            
             document.getElementById('welcomeSection').classList.add('hidden');
-            const sliderCont = document.getElementById('imageSliderContainer');
-            if(sliderCont) sliderCont.classList.add('hidden');
+            if(document.getElementById('imageSliderContainer')) {
+                document.getElementById('imageSliderContainer').classList.add('hidden');
+            }
             document.getElementById('filterMessage').classList.add('hidden');
-
+            
             if (isNewSearch) {
-                window.currentPage = 1; window.currentQuery = input;
-                window.currentMin = document.getElementById('minPrice').value; window.currentMax = document.getElementById('maxPrice').value;
+                window.currentPage = 1;
+                window.currentQuery = input;
+                window.currentMin = document.getElementById('minPrice').value;
+                window.currentMax = document.getElementById('maxPrice').value;
                 document.getElementById('results').innerHTML = "";
                 
                 window.saveRecentSearch(input);
                 setDoc(doc(db, "system", "analytics"), { searches: increment(1) }, { merge: true });
-
-                // שמירת חיפושים למשתמש מחובר (מעקב למייל)
+                
                 if (window.isLoggedIn && auth.currentUser) {
-                    const userRef = doc(db, "users", auth.currentUser.uid);
-                    setDoc(userRef, { savedSearches: arrayUnion(input), lastActive: new Date().toISOString() }, { merge: true }).catch(e => console.log(e));
+                    setDoc(doc(db, "users", auth.currentUser.uid), { savedSearches: arrayUnion(input), lastActive: new Date().toISOString() }, { merge: true }).catch(()=>{});
                 }
-
-            } else { window.currentPage++; }
-
+            } else {
+                window.currentPage++;
+            }
+            
             document.getElementById('loader').classList.remove('hidden');
-
+            
             try {
                 let url = `/api/search?q=${encodeURIComponent(window.currentQuery)}&page=${window.currentPage}`;
                 if (window.currentMin) url += `&min=${window.currentMin}`;
                 if (window.currentMax) url += `&max=${window.currentMax}`;
-
-                const response = await fetch(url);
-                const products = await response.json();
+                
+                const res = await fetch(url);
+                const products = await res.json();
                 document.getElementById('loader').classList.add('hidden');
-
-                if (response.status !== 200) {
+                
+                if (res.status !== 200) {
                     if(products.error) {
                         document.getElementById('filterMessage').innerText = products.error;
                         document.getElementById('filterMessage').classList.remove('hidden');
                     }
                     return;
                 }
-
+                
                 if (!products || products.length === 0) return;
-                renderItems(products);
-                document.getElementById('pagination').classList.remove('hidden');
-            } catch (e) { document.getElementById('loader').classList.add('hidden'); }
-        };
-
-        function renderItems(products) {
-            const grid = document.getElementById('results');
-            products.forEach(p => {
-                const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
-                grid.innerHTML += `
-                    <div class="product-card bg-white rounded-2xl p-4 border border-gray-200 flex flex-col shadow-sm">
-                        <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
-                            <img src="${p.product_main_image_url}" class="w-full h-40 object-cover">
-                        </div>
-                        <h3 class="text-gray-800 font-semibold text-sm mb-3 line-clamp-2 h-10 leading-tight">${p.product_title}</h3>
-                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                            <div class="text-xl font-extrabold text-green-600"><span class="text-xs font-normal text-gray-400 ml-0.5">מ-</span>₪${price}</div>
-                            <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
-                                צפייה בדיל
+                
+                const grid = document.getElementById('results');
+                products.forEach(p => {
+                    const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
+                    grid.innerHTML += `
+                        <div class="product-card bg-white rounded-2xl p-4 border border-gray-200 flex flex-col shadow-sm relative group">
+                            <button onclick="window.openReportModal('${p.promotion_link}')" class="absolute top-2 right-2 bg-white/80 hover:bg-red-50 text-gray-400 hover:text-red-500 w-8 h-8 rounded-full z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-sm" title="דווח על בעיה במוצר">
+                                <i class="fa-solid fa-flag text-xs"></i>
                             </button>
+                            <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
+                                <img src="${p.product_main_image_url}" class="w-full h-40 object-cover">
+                            </div>
+                            <h3 class="text-gray-800 font-semibold text-sm mb-3 line-clamp-2 h-10 leading-tight">${p.product_title}</h3>
+                            <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                                <div class="text-xl font-extrabold text-green-600">
+                                    <span class="text-xs font-normal text-gray-400 ml-0.5">מ-</span>₪${price}
+                                </div>
+                                <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
+                                    צפייה בדיל
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
-        }
+                    `;
+                });
+                
+                document.getElementById('pagination').classList.remove('hidden');
+            } catch (e) {
+                document.getElementById('loader').classList.add('hidden');
+            }
+        };
 
         window.handleProductClick = function(link) {
-            if (window.isLoggedIn) { window.open(link, '_blank'); } 
-            else { window.pendingProductLink = link; document.getElementById('loginModal').classList.remove('hidden'); }
+            if (window.isLoggedIn) {
+                window.open(link, '_blank');
+            } else {
+                window.pendingProductLink = link;
+                document.getElementById('loginModal').classList.remove('hidden');
+            }
         };
 
-        window.toggleAdminPanel = function() { 
-            document.getElementById('adminPanel').classList.toggle('hidden'); 
-            window.updateAdminStats(); 
+        window.toggleAdminPanel = function() {
+            document.getElementById('adminPanel').classList.toggle('hidden');
+            window.updateAdminStats();
         };
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') window.searchProducts(true);
+        });
         
-        document.getElementById('searchInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.searchProducts(true); });
-
         window.loadDataFromDB();
     </script>
 </body>
