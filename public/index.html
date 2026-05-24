@@ -5,41 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">המציאות שפשוט חבל לפספס</title>
     <link id="dynamicFavicon" rel="icon" href="data:;base64,iVBORw0KGgo=">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;800&display=swap');
-        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
-        .product-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
-        main { padding-bottom: 120px; } 
-        .slider-img { transition: opacity 0.5s ease-in-out; }
+        
+        body { 
+            font-family: 'Assistant', sans-serif; 
+            background-color: #f8fafc; 
+        }
+        
+        .product-card { 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        .product-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); 
+        }
+        
+        main { 
+            padding-bottom: 120px; 
+        } 
+        
+        .slider-img { 
+            transition: opacity 0.5s ease-in-out; 
+        }
     </style>
 </head>
 <body class="text-gray-900 min-h-screen flex flex-col">
 
     <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
+            
             <div class="flex items-center gap-3">
                 <div id="siteLogoDisplay" class="flex items-center gap-3"></div>
             </div>
-            <div class="flex items-center gap-2 sm:gap-4">
-                <a href="mailto:dealsthatare@gmail.com?subject=פניה לטירוף דיל בנושא " class="text-xs sm:text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full transition flex items-center gap-2">
-                    <i class="fa-solid fa-envelope text-blue-500"></i> <span class="hidden sm:inline">צור קשר</span>
+            
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="mailto:dealsthatare@gmail.com?subject=פניה לטירוף דיל" class="text-xs sm:text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-envelope text-blue-500"></i> 
+                    <span class="hidden sm:inline">צור קשר</span>
                 </a>
+                
+                <button id="audioAlertBtn" onclick="window.toggleAudioAlerts()" class="text-xs sm:text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full transition flex items-center gap-1.5 shadow-sm border border-transparent">
+                    <i class="fa-solid fa-bell-slash text-gray-400"></i> 
+                    <span class="hidden sm:inline">התראות כבויות</span>
+                </button>
+                
                 <button id="adminBtn" onclick="window.toggleAdminPanel()" class="hidden text-xs text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded-full font-bold transition shadow-sm">
                     <i class="fa-solid fa-sliders"></i>
                 </button>
+                
                 <div id="userAuthArea">
-                    <button onclick="window.handleGoogleLogin()" class="text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2">
+                    <button onclick="window.handleGoogleLogin()" class="text-xs sm:text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full border border-gray-200 transition flex items-center gap-2">
                         <i class="fa-brands fa-google text-blue-500"></i> התחבר
                     </button>
                 </div>
             </div>
+            
         </div>
     </nav>
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 pt-8">
+        
         <div class="text-center mb-8 animate-fade-in" id="welcomeSection">
             <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3" id="siteTitleDisplay">חפשו את הדיל שלכם</h1>
             <p class="text-gray-500 text-base max-w-2xl mx-auto whitespace-pre-wrap" id="siteDescDisplay">מנוע חיפוש ישיר לעליאקספרס עם סינון חכם ללא מוצרי זבל.</p>
@@ -52,7 +83,7 @@
 
         <div id="imageSliderContainer" class="hidden max-w-4xl mx-auto mb-10 relative rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-gray-900 h-48 md:h-64">
             <div id="sliderWrapper" class="w-full h-full relative">
-                <img id="sliderImage" src="" class="w-full h-full object-cover slider-img opacity-100">
+                <img id="sliderImage" src="" class="w-full h-full object-cover slider-img opacity-100" alt="Promo Banner">
             </div>
             <div id="sliderDots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10"></div>
         </div>
@@ -71,24 +102,29 @@
                 הצג תוצאות נוספות
             </button>
         </div>
+        
     </main>
 
     <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] p-4 z-30">
         <div class="max-w-4xl mx-auto">
             <div class="flex flex-col sm:flex-row gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:bg-white transition-all">
+                
                 <div class="flex-grow flex items-center pr-3 gap-2">
                     <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="רשמו מוצר לחיפוש..." class="w-full p-2 bg-transparent outline-none text-base sm:text-lg text-gray-800">
                 </div>
+                
                 <div class="flex items-center gap-2 px-2 border-r border-l border-gray-200">
                     <span class="text-xs text-gray-400 font-bold whitespace-nowrap">מ-₪</span>
                     <input type="number" id="minPrice" placeholder="0" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
                     <span class="text-xs text-gray-400 font-bold whitespace-nowrap">עד-₪</span>
                     <input type="number" id="maxPrice" placeholder="MAX" class="w-16 p-2 rounded-lg text-center font-bold text-gray-800 bg-white outline-none border border-gray-200 focus:border-gray-400 text-sm">
                 </div>
+                
                 <button onclick="window.searchProducts(true)" class="bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition font-bold shadow-sm active:scale-95 whitespace-nowrap">
                     חפש דילים
                 </button>
+                
             </div>
         </div>
     </div>
@@ -116,9 +152,11 @@
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative border border-gray-100">
             <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             <h3 class="text-xl font-black text-gray-950 mb-3 text-center"><i class="fa-solid fa-flag text-red-500 ml-1"></i> דיווח על מוצר</h3>
-            <p class="text-gray-500 text-xs mb-4 text-center">ראית משהו לא תקין? נשמח לדעת.</p>
-            <textarea id="reportReasonInput" rows="3" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm mb-4 outline-none focus:border-red-400" placeholder="פרט כאן את סיבת הדיווח..."></textarea>
-            <button onclick="window.submitProductReport()" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">שלח דיווח</button>
+            <p class="text-gray-500 text-xs mb-4 text-center">ראית משהו לא תקין או פגום בדיל? נשמח לדעת.</p>
+            <textarea id="reportReasonInput" rows="3" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm mb-4 outline-none focus:border-red-400 resize-none" placeholder="פרט כאן את סיבת הדיווח..."></textarea>
+            <button onclick="window.submitProductReport()" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">
+                שלח דיווח
+            </button>
         </div>
     </div>
 
@@ -130,7 +168,9 @@
             </div>
             <h3 id="campaignTitleDisplay" class="text-2xl font-black text-gray-950 mb-3"></h3>
             <p id="campaignTextDisplay" class="text-gray-600 text-sm leading-relaxed mb-6"></p>
-            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">הבנתי, תודה!</button>
+            <button onclick="document.getElementById('campaignModal').classList.add('hidden')" id="campaignBtnDisplay" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-bold transition shadow-md">
+                הבנתי, תודה!
+            </button>
         </div>
     </div>
 
@@ -177,31 +217,31 @@
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
                 <h4 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-nib ml-1"></i> עיצוב האתר</h4>
                 <div>
-                    <label class="text-[11px] text-gray-400 block">שם האתר:</label>
+                    <label class="text-[11px] text-gray-400 block mb-1">שם האתר:</label>
                     <input type="text" id="adminLogoText" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block">תיאור קצר (למעלה):</label>
+                    <label class="text-[11px] text-gray-400 block mb-1">תיאור קצר (למעלה):</label>
                     <input type="text" id="adminNavDesc" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
                 <div class="bg-gray-900 p-3 rounded-lg border border-gray-700">
                     <label class="text-[11px] text-gray-400 block mb-2">לוגו:</label>
                     <input type="file" id="adminLogoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white cursor-pointer">
-                    <button onclick="window.clearLogo()" class="text-[11px] text-red-400 mt-2"><i class="fa-solid fa-trash-can"></i> מחק</button>
+                    <button onclick="window.clearLogo()" class="text-[11px] text-red-400 mt-2 hover:text-red-300 transition"><i class="fa-solid fa-trash-can"></i> מחק תמונה</button>
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block">כותרת עמוד ראשית:</label>
+                    <label class="text-[11px] text-gray-400 block mb-1">כותרת עמוד ראשית:</label>
                     <input type="text" id="adminMainTitle" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block">תיאור תחת הכותרת:</label>
-                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white"></textarea>
+                    <label class="text-[11px] text-gray-400 block mb-1">תיאור תחת הכותרת:</label>
+                    <textarea id="adminDesc" rows="2" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white resize-none"></textarea>
                 </div>
                 <div>
-                    <label class="text-[11px] text-gray-400 block">טקסט חיפוש:</label>
+                    <label class="text-[11px] text-gray-400 block mb-1">טקסט חיפוש:</label>
                     <input type="text" id="adminSearchPlaceholder" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white">
                 </div>
-                <button onclick="window.saveSiteSettingsToDB()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold">שמור בענן</button>
+                <button onclick="window.saveSiteSettingsToDB()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-xs font-bold transition">שמור בענן</button>
             </div>
 
             <div class="space-y-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
@@ -209,7 +249,7 @@
                 <div id="adminListDisplay" class="space-y-2 mt-2 max-h-40 overflow-y-auto pr-1"></div>
                 <div class="flex gap-2 mt-3">
                     <input type="email" id="newAdminEmail" class="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-xs text-white" placeholder="מייל...">
-                    <button onclick="window.addNewAdmin()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">הוסף</button>
+                    <button onclick="window.addNewAdmin()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">הוסף</button>
                 </div>
             </div>
 
@@ -217,7 +257,7 @@
                 <h4 class="text-sm font-bold text-green-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-images ml-1"></i> באנרים</h4>
                 <div>
                     <input type="file" id="adminSliderUpload" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white cursor-pointer">
-                    <button onclick="window.addSliderImageToDB()" class="w-full bg-green-600 text-white py-1.5 rounded text-xs font-bold mt-2">העלה</button>
+                    <button onclick="window.addSliderImageToDB()" class="w-full bg-green-600 text-white py-1.5 rounded text-xs font-bold mt-2 transition">העלה לענן</button>
                 </div>
                 <div id="adminSliderList" class="space-y-2 mt-2 max-h-40 overflow-y-auto pr-1"></div>
             </div>
@@ -245,6 +285,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+        // הגדרת מנהל ראשי
         const MASTER_ADMIN_EMAIL = "xzz556786407@gmail.com"; 
 
         const firebaseConfig = {
@@ -262,6 +303,7 @@
         const provider = new GoogleAuthProvider();
         const db = getFirestore(app);
 
+        // משתנים גלובליים
         window.siteConfig = {
             logoText: "המציאות שפשוט חבל לפספס", 
             navDesc: "דילים חמים מעליאקספרס", 
@@ -280,41 +322,45 @@
         window.pendingProductLink = ""; 
         window.reportingProductLink = "";
         
-        // מערכת התראות קוליות
+        // ================== מערכת התראות קוליות ==================
         window.alertsEnabled = localStorage.getItem('userAlertsEnabled') === 'true';
-        const alertAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        const alertAudio = new Audio('https://actions.google.com/sounds/v1/states/notification_high_intensity.ogg'); 
         
         window.toggleAudioAlerts = function() {
             window.alertsEnabled = !window.alertsEnabled;
             localStorage.setItem('userAlertsEnabled', window.alertsEnabled);
-            updateAlertIcon();
+            
             if(window.alertsEnabled) {
-                alertAudio.play().catch(e => console.log(e));
+                const wantsAlerts = confirm("האם ברצונך לקבל התראה קולית כאשר תוצאות החיפוש יתקבלו בזמן שאתה בלשונית אחרת?");
+                if(!wantsAlerts) {
+                    window.alertsEnabled = false;
+                    localStorage.setItem('userAlertsEnabled', 'false');
+                    updateAlertIcon();
+                    return;
+                }
+                alertAudio.play().catch(() => {}); 
             }
+            updateAlertIcon();
         };
         
         function updateAlertIcon() {
             const btn = document.getElementById('audioAlertBtn');
             if(!btn) return;
+            
             if(window.alertsEnabled) {
-                btn.innerHTML = `<i class="fa-solid fa-bell text-yellow-500"></i>`;
+                btn.innerHTML = `<i class="fa-solid fa-bell text-yellow-500"></i> <span class="hidden sm:inline">התראות פעילות</span>`;
                 btn.classList.add('bg-yellow-50', 'border-yellow-200');
             } else {
-                btn.innerHTML = `<i class="fa-solid fa-bell-slash text-gray-400"></i>`;
+                btn.innerHTML = `<i class="fa-solid fa-bell-slash text-gray-400"></i> <span class="hidden sm:inline">התראות כבויות</span>`;
                 btn.classList.remove('bg-yellow-50', 'border-yellow-200');
             }
         }
 
-        // צפצוף כשעוזבים את החלון
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden && window.alertsEnabled && window.currentQuery !== "") {
-                alertAudio.play().catch(e => console.log(e));
-            }
-        });
-
+        // ================== מערכת הרשאות מנהל ==================
         window.checkAdminAccess = function() {
             const user = auth.currentUser;
             const admins = window.siteConfig.admins || [MASTER_ADMIN_EMAIL];
+            
             if (user && admins.some(e => e.toLowerCase() === user.email.toLowerCase())) {
                 document.getElementById('adminBtn').classList.remove('hidden');
                 window.loadReportsForAdmin();
@@ -326,6 +372,7 @@
         window.renderAdminList = function() {
             const listDiv = document.getElementById('adminListDisplay');
             if(!listDiv) return;
+            
             const admins = window.siteConfig.admins || [MASTER_ADMIN_EMAIL];
             listDiv.innerHTML = admins.map((email) => `
                 <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800">
@@ -341,6 +388,7 @@
         window.addNewAdmin = function() {
             const input = document.getElementById('newAdminEmail');
             const newEmail = input.value.trim().toLowerCase();
+            
             if(!newEmail || !newEmail.includes('@')) return alert("מייל לא תקין");
             if (!window.siteConfig.admins) window.siteConfig.admins = [MASTER_ADMIN_EMAIL];
             
@@ -352,12 +400,13 @@
                     window.checkAdminAccess();
                 });
             } else {
-                alert("המנהל כבר קיים.");
+                alert("המנהל כבר קיים במערכת.");
             }
         };
 
         window.removeAdmin = function(emailToRemove) {
             if(emailToRemove.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) return;
+            
             window.siteConfig.admins = window.siteConfig.admins.filter(e => e.toLowerCase() !== emailToRemove.toLowerCase());
             window.saveDataToDB().then(() => {
                 window.renderAdminList();
@@ -365,6 +414,7 @@
             });
         };
 
+        // ================== מערכת דיווחים ==================
         window.openReportModal = function(link) {
             if (!window.isLoggedIn) {
                 return document.getElementById('loginPromptModal').classList.remove('hidden');
@@ -391,7 +441,7 @@
             try {
                 const ref = doc(db, "system", "reports_data");
                 await setDoc(ref, { reports: arrayUnion(reportData) }, { merge: true });
-                alert("הדיווח נשלח בהצלחה!");
+                alert("הדיווח נשלח בהצלחה למנהלי המערכת!");
                 document.getElementById('reportModal').classList.add('hidden');
             } catch(e) {
                 alert("שגיאה בשליחת הדיווח.");
@@ -402,10 +452,12 @@
             try {
                 const snap = await getDoc(doc(db, "system", "reports_data"));
                 const listDiv = document.getElementById('adminReportsList');
+                
                 if(!snap.exists() || !snap.data().reports || snap.data().reports.length === 0) {
-                    listDiv.innerHTML = `<div class="text-xs text-gray-500 text-center py-4">אין דיווחים.</div>`;
+                    listDiv.innerHTML = `<div class="text-xs text-gray-500 text-center py-4">אין דיווחים חדשים.</div>`;
                     return;
                 }
+                
                 const reports = snap.data().reports.reverse();
                 listDiv.innerHTML = reports.map(r => `
                     <div class="bg-white p-3 rounded-xl border ${r.status==='open' ? 'border-red-300 shadow-sm' : 'border-gray-200 opacity-60'}">
@@ -417,13 +469,13 @@
                         <div class="text-[10px] text-gray-500 mb-2">${r.email}</div>
                         <div class="text-xs text-gray-900 bg-gray-50 p-2 rounded mb-2">${r.reason}</div>
                         <div class="flex gap-2">
-                            <a href="${r.link}" target="_blank" class="flex-1 bg-blue-50 text-blue-600 text-[11px] font-bold py-1.5 rounded text-center">צפה במוצר</a>
-                            ${r.status==='open' ? `<button onclick="window.markReportHandled('${r.id}')" class="flex-1 bg-green-500 text-white text-[11px] font-bold py-1.5 rounded">סמן כטופל</button>` : ''}
+                            <a href="${r.link}" target="_blank" class="flex-1 bg-blue-50 text-blue-600 text-[11px] font-bold py-1.5 rounded text-center border border-blue-200">צפה במוצר</a>
+                            ${r.status==='open' ? `<button onclick="window.markReportHandled('${r.id}')" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold py-1.5 rounded">סמן כטופל</button>` : ''}
                         </div>
                     </div>
                 `).join('');
             } catch(e) {
-                console.log(e);
+                console.error(e);
             }
         };
 
@@ -436,16 +488,18 @@
                 await setDoc(ref, { reports: reports });
                 window.loadReportsForAdmin();
             } catch(e) {
-                console.log(e);
+                console.error(e);
             }
         };
 
+        // ================== מערכת חיפושים ==================
         window.loadRecentSearches = function() {
             const container = document.getElementById('recentSearchesContainer');
             if (!window.isLoggedIn) {
                 container.classList.add('hidden');
                 return;
             }
+            
             const searches = JSON.parse(localStorage.getItem('userRecentSearches') || '[]');
             if (searches.length > 0 && window.currentQuery === "") {
                 container.classList.remove('hidden');
@@ -461,6 +515,7 @@
 
         window.saveRecentSearch = function(term) {
             if (!window.isLoggedIn) return; 
+            
             let searches = JSON.parse(localStorage.getItem('userRecentSearches') || '[]');
             searches = searches.filter(s => s.toLowerCase() !== term.toLowerCase());
             searches.unshift(term); 
@@ -473,6 +528,7 @@
             window.searchProducts(true);
         };
 
+        // ================== תקשורת מול הענן (DB) ==================
         window.updateAdminStats = async function() {
             try {
                 const snap = await getDoc(doc(db, "system", "analytics"));
@@ -483,7 +539,7 @@
                     document.getElementById('adminStatUsers').innerText = data.registeredUsers || 0;
                 }
             } catch(e) {
-                console.log(e);
+                console.error(e);
             }
         };
 
@@ -527,7 +583,7 @@
             try {
                 await setDoc(doc(db, "system", "global_settings"), window.siteConfig);
                 applySettingsToUI();
-                alert("נשמר בהצלחה!");
+                alert("הנתונים נשמרו בענן בהצלחה!");
             } catch (e) {
                 alert("שגיאה בשמירה.");
             }
@@ -566,6 +622,7 @@
 
             window.renderAdminSliderList();
             window.renderAdminList();
+            updateAlertIcon();
         }
 
         window.openEnlargedImage = function(src) {
@@ -579,20 +636,20 @@
         };
 
         window.saveSiteSettingsToDB = function() {
-            window.siteConfig.logoText = document.getElementById('adminLogoText').value;
-            window.siteConfig.navDesc = document.getElementById('adminNavDesc').value;
-            window.siteConfig.searchPlaceholder = document.getElementById('adminSearchPlaceholder').value;
-            window.siteConfig.mainTitle = document.getElementById('adminMainTitle').value;
+            window.siteConfig.logoText = document.getElementById('adminLogoText').value; 
+            window.siteConfig.navDesc = document.getElementById('adminNavDesc').value; 
+            window.siteConfig.searchPlaceholder = document.getElementById('adminSearchPlaceholder').value; 
+            window.siteConfig.mainTitle = document.getElementById('adminMainTitle').value; 
             window.siteConfig.mainDesc = document.getElementById('adminDesc').value;
             
-            const fileInput = document.getElementById('adminLogoUpload');
-            if (fileInput.files && fileInput.files[0]) {
-                compressImage(fileInput.files[0], (base64) => {
-                    window.siteConfig.logoBase64 = base64;
-                    window.saveDataToDB();
-                });
-            } else {
-                window.saveDataToDB();
+            const fileInput = document.getElementById('adminLogoUpload'); 
+            if (fileInput.files && fileInput.files[0]) { 
+                compressImage(fileInput.files[0], (base64) => { 
+                    window.siteConfig.logoBase64 = base64; 
+                    window.saveDataToDB(); 
+                }); 
+            } else { 
+                window.saveDataToDB(); 
             }
         };
 
@@ -611,28 +668,30 @@
         };
 
         window.addSliderImageToDB = function() {
-            const f = document.getElementById('adminSliderUpload');
+            const f = document.getElementById('adminSliderUpload'); 
             if (!f.files[0]) return;
-            if (!window.siteConfig.sliderImages) window.siteConfig.sliderImages = [];
-            if (window.siteConfig.sliderImages.length >= 8) return alert("מקסימום 8.");
             
-            compressImage(f.files[0], (base64) => {
-                window.siteConfig.sliderImages.push(base64);
-                window.saveDataToDB().then(() => {
-                    f.value = "";
-                    window.initSlider();
-                });
+            if (!window.siteConfig.sliderImages) window.siteConfig.sliderImages = [];
+            if (window.siteConfig.sliderImages.length >= 8) return alert("מקסימום 8 תמונות.");
+            
+            compressImage(f.files[0], (base64) => { 
+                window.siteConfig.sliderImages.push(base64); 
+                window.saveDataToDB().then(() => { 
+                    f.value = ""; 
+                    window.initSlider(); 
+                }); 
             });
         };
 
-        window.deleteSliderImageFromDB = function(index) {
-            window.siteConfig.sliderImages.splice(index, 1);
-            window.saveDataToDB().then(() => window.initSlider());
+        window.deleteSliderImageFromDB = function(index) { 
+            window.siteConfig.sliderImages.splice(index, 1); 
+            window.saveDataToDB().then(() => window.initSlider()); 
         };
-
+        
         window.renderAdminSliderList = function() {
-            const d = document.getElementById('adminSliderList');
+            const d = document.getElementById('adminSliderList'); 
             if(!d) return;
+            
             d.innerHTML = (window.siteConfig.sliderImages || []).map((img, i) => `
                 <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800">
                     <img src="${img}" class="w-14 h-8 object-cover rounded">
@@ -642,162 +701,165 @@
             `).join('');
         };
 
-        let sliderInterval = null;
+        let sliderInterval = null; 
         let currentSliderIndex = 0;
         
         window.initSlider = function() {
-            const images = window.siteConfig.sliderImages || [];
+            const images = window.siteConfig.sliderImages || []; 
             const container = document.getElementById('imageSliderContainer');
+            
             if(images.length === 0) return container && container.classList.add('hidden');
             if(container && window.currentQuery === "") container.classList.remove('hidden');
             
             document.getElementById('sliderDots').innerHTML = images.map((_, i) => `<div id="dot-${i}" class="w-2 h-2 rounded-full bg-white/40"></div>`).join('');
-            currentSliderIndex = 0;
+            currentSliderIndex = 0; 
             updateSliderDOM();
             
             if(sliderInterval) clearInterval(sliderInterval);
-            if(images.length > 1) {
-                let sc = 0;
-                sliderInterval = setInterval(() => {
-                    if(sc >= 5 * images.length) return clearInterval(sliderInterval);
-                    currentSliderIndex = (currentSliderIndex + 1) % images.length;
-                    sc++;
-                    updateSliderDOM();
-                }, 3000);
+            if(images.length > 1) { 
+                let sc = 0; 
+                sliderInterval = setInterval(() => { 
+                    if(sc >= 5 * images.length) return clearInterval(sliderInterval); 
+                    currentSliderIndex = (currentSliderIndex + 1) % images.length; 
+                    sc++; 
+                    updateSliderDOM(); 
+                }, 3000); 
             }
         };
-
-        function updateSliderDOM() {
-            const img = document.getElementById('sliderImage');
-            const images = window.siteConfig.sliderImages || [];
-            if(!img || images.length === 0) return;
+        
+        function updateSliderDOM() { 
+            const img = document.getElementById('sliderImage'); 
+            const images = window.siteConfig.sliderImages || []; 
+            if(!img || images.length === 0) return; 
             
-            img.style.opacity = "0.3";
-            setTimeout(() => {
-                img.src = images[currentSliderIndex];
-                img.style.opacity = "1";
-                images.forEach((_, i) => {
-                    const dot = document.getElementById(`dot-${i}`);
-                    if(dot) dot.className = i === currentSliderIndex ? "w-4 h-2 rounded-full bg-white" : "w-2 h-2 rounded-full bg-white/40";
-                });
-            }, 150);
+            img.style.opacity = "0.3"; 
+            setTimeout(() => { 
+                img.src = images[currentSliderIndex]; 
+                img.style.opacity = "1"; 
+                images.forEach((_, i) => { 
+                    const dot = document.getElementById(`dot-${i}`); 
+                    if(dot) dot.className = i === currentSliderIndex ? "w-4 h-2 rounded-full bg-white" : "w-2 h-2 rounded-full bg-white/40"; 
+                }); 
+            }, 150); 
         }
 
-        window.checkAndShowCampaign = function() {
-            const cmp = window.siteConfig.campaign;
-            if (!cmp || !cmp.active) return;
-            if (cmp.expiry && new Date().getTime() > new Date(cmp.expiry).getTime()) return;
+        window.checkAndShowCampaign = function() { 
+            const c = window.siteConfig.campaign; 
+            if (!c || !c.active) return; 
+            if (c.expiry && new Date().getTime() > new Date(c.expiry).getTime()) return; 
             
-            const currentShows = parseInt(localStorage.getItem("userCampaignViewCount") || "0");
-            if (currentShows >= cmp.maxShows) return;
-
-            setTimeout(() => {
-                document.getElementById('campaignTitleDisplay').innerText = cmp.title;
-                document.getElementById('campaignTextDisplay').innerText = cmp.text;
-                document.getElementById('campaignModal').classList.remove('hidden');
-                localStorage.setItem("userCampaignViewCount", (currentShows + 1).toString());
-            }, (cmp.delay || 3) * 1000);
+            const s = parseInt(localStorage.getItem("userCampaignViewCount") || "0"); 
+            if (s >= c.maxShows) return; 
+            
+            setTimeout(() => { 
+                document.getElementById('campaignTitleDisplay').innerText = c.title; 
+                document.getElementById('campaignTextDisplay').innerText = c.text; 
+                document.getElementById('campaignModal').classList.remove('hidden'); 
+                localStorage.setItem("userCampaignViewCount", (s + 1).toString()); 
+            }, (c.delay || 3) * 1000); 
         };
 
+        // ================== מערכת משתמשים (Auth) ==================
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                window.isLoggedIn = true;
+                window.isLoggedIn = true; 
                 window.loadRecentSearches();
                 
                 const firstName = user.displayName ? user.displayName.split(' ')[0] : 'משתמש';
                 document.getElementById('userAuthArea').innerHTML = `
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold shadow-sm">
-                        <button onclick="window.toggleAudioAlerts()" id="audioAlertBtn" class="text-gray-400 hover:text-yellow-500 w-6 h-6 rounded-full flex items-center justify-center transition" title="התראות קוליות">
-                            <i class="fa-solid fa-bell-slash"></i>
-                        </button>
-                        <i class="fa-solid fa-circle-user border-r border-green-200 pr-2 ml-1"></i> ${firstName}
+                        <i class="fa-solid fa-circle-user ml-1"></i> ${firstName}
                         <button onclick="window.handleLogout()" class="ml-1 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 `;
-                updateAlertIcon();
                 
-                getDoc(doc(db, "users", user.uid)).then(snap => {
-                    if(!snap.exists()) {
-                        setDoc(doc(db, "users", user.uid), { email: user.email, name: user.displayName, joined: new Date().toISOString() });
-                        setDoc(doc(db, "system", "analytics"), { registeredUsers: increment(1) }, { merge: true });
-                    }
+                getDoc(doc(db, "users", user.uid)).then(snap => { 
+                    if(!snap.exists()) { 
+                        setDoc(doc(db, "users", user.uid), { email: user.email, name: user.displayName, joined: new Date().toISOString() }); 
+                        setDoc(doc(db, "system", "analytics"), { registeredUsers: increment(1) }, { merge: true }); 
+                    } 
                 });
                 window.checkAdminAccess();
+                
             } else {
-                window.isLoggedIn = false;
-                document.getElementById('adminBtn').classList.add('hidden');
+                window.isLoggedIn = false; 
+                document.getElementById('adminBtn').classList.add('hidden'); 
                 document.getElementById('recentSearchesContainer').classList.add('hidden');
                 
                 if (!localStorage.getItem("hasSeenLoginPrompt")) {
-                    setTimeout(() => {
-                        document.getElementById('loginPromptModal').classList.remove('hidden');
-                        localStorage.setItem("hasSeenLoginPrompt", "true");
+                    setTimeout(() => { 
+                        document.getElementById('loginPromptModal').classList.remove('hidden'); 
+                        localStorage.setItem("hasSeenLoginPrompt", "true"); 
                     }, 1500);
                 }
             }
         });
 
-        window.handleGoogleLogin = async function() {
-            try {
-                await signInWithPopup(auth, provider);
-                document.getElementById('loginPromptModal').classList.add('hidden');
-                if (window.pendingProductLink) {
-                    window.open(window.pendingProductLink, '_blank');
-                    window.pendingProductLink = "";
-                }
-            } catch (e) {
-                console.log(e);
-            }
+        window.handleGoogleLogin = async function() { 
+            try { 
+                await signInWithPopup(auth, provider); 
+                document.getElementById('loginPromptModal').classList.add('hidden'); 
+                if (window.pendingProductLink) { 
+                    window.open(window.pendingProductLink, '_blank'); 
+                    window.pendingProductLink = ""; 
+                } 
+            } catch (e) { console.log(e); } 
+        };
+        
+        window.handleLogout = function() { 
+            signOut(auth).then(() => window.location.reload()); 
         };
 
-        window.handleLogout = function() {
-            signOut(auth).then(() => window.location.reload());
-        };
-
-        window.searchProducts = async function(isNewSearch) {
-            const input = document.getElementById('searchInput').value.trim();
-            if (!input) return;
+        // ================== ביצוע חיפוש ==================
+        window.searchProducts = async function(isNew) {
+            const inp = document.getElementById('searchInput').value.trim(); 
+            if (!inp) return;
             
-            document.getElementById('welcomeSection').classList.add('hidden');
+            document.getElementById('welcomeSection').classList.add('hidden'); 
             if(document.getElementById('imageSliderContainer')) {
-                document.getElementById('imageSliderContainer').classList.add('hidden');
+                document.getElementById('imageSliderContainer').classList.add('hidden'); 
             }
             document.getElementById('filterMessage').classList.add('hidden');
             
-            if (isNewSearch) {
-                window.currentPage = 1;
-                window.currentQuery = input;
-                window.currentMin = document.getElementById('minPrice').value;
-                window.currentMax = document.getElementById('maxPrice').value;
+            if (isNew) {
+                window.currentPage = 1; 
+                window.currentQuery = inp; 
+                window.currentMin = document.getElementById('minPrice').value; 
+                window.currentMax = document.getElementById('maxPrice').value; 
                 document.getElementById('results').innerHTML = "";
                 
-                window.saveRecentSearch(input);
+                window.saveRecentSearch(inp); 
                 setDoc(doc(db, "system", "analytics"), { searches: increment(1) }, { merge: true });
                 
                 if (window.isLoggedIn && auth.currentUser) {
-                    setDoc(doc(db, "users", auth.currentUser.uid), { savedSearches: arrayUnion(input), lastActive: new Date().toISOString() }, { merge: true }).catch(()=>{});
+                    setDoc(doc(db, "users", auth.currentUser.uid), { savedSearches: arrayUnion(inp), lastActive: new Date().toISOString() }, { merge: true }).catch(()=>{});
                 }
-            } else {
-                window.currentPage++;
+            } else { 
+                window.currentPage++; 
             }
             
             document.getElementById('loader').classList.remove('hidden');
             
             try {
-                let url = `/api/search?q=${encodeURIComponent(window.currentQuery)}&page=${window.currentPage}`;
-                if (window.currentMin) url += `&min=${window.currentMin}`;
+                let url = `/api/search?q=${encodeURIComponent(window.currentQuery)}&page=${window.currentPage}`; 
+                if (window.currentMin) url += `&min=${window.currentMin}`; 
                 if (window.currentMax) url += `&max=${window.currentMax}`;
                 
-                const res = await fetch(url);
-                const products = await res.json();
+                const res = await fetch(url); 
+                const products = await res.json(); 
                 document.getElementById('loader').classList.add('hidden');
                 
-                if (res.status !== 200) {
-                    if(products.error) {
-                        document.getElementById('filterMessage').innerText = products.error;
-                        document.getElementById('filterMessage').classList.remove('hidden');
-                    }
-                    return;
+                if (res.status !== 200) { 
+                    if(products.error) { 
+                        document.getElementById('filterMessage').innerText = products.error; 
+                        document.getElementById('filterMessage').classList.remove('hidden'); 
+                    } 
+                    return; 
+                }
+                
+                // התראה קולית חכמה: צפצוף רק אם התוצאות חזרו, המשתמש אישר, והדפדפן מוסתר כרגע
+                if (document.hidden && window.alertsEnabled) {
+                    alertAudio.play().catch(e => console.log(e));
                 }
                 
                 if (!products || products.length === 0) return;
@@ -825,31 +887,32 @@
                         </div>
                     `;
                 });
-                
                 document.getElementById('pagination').classList.remove('hidden');
-            } catch (e) {
-                document.getElementById('loader').classList.add('hidden');
+                
+            } catch (e) { 
+                document.getElementById('loader').classList.add('hidden'); 
             }
         };
 
-        window.handleProductClick = function(link) {
-            if (window.isLoggedIn) {
-                window.open(link, '_blank');
-            } else {
-                window.pendingProductLink = link;
-                document.getElementById('loginModal').classList.remove('hidden');
-            }
+        window.handleProductClick = function(l) { 
+            if (window.isLoggedIn) { 
+                window.open(l, '_blank'); 
+            } else { 
+                window.pendingProductLink = l; 
+                document.getElementById('loginModal').classList.remove('hidden'); 
+            } 
         };
-
-        window.toggleAdminPanel = function() {
-            document.getElementById('adminPanel').classList.toggle('hidden');
-            window.updateAdminStats();
+        
+        window.toggleAdminPanel = function() { 
+            document.getElementById('adminPanel').classList.toggle('hidden'); 
+            window.updateAdminStats(); 
         };
-
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') window.searchProducts(true);
+        
+        document.getElementById('searchInput').addEventListener('keypress', (e) => { 
+            if(e.key === 'Enter') window.searchProducts(true); 
         });
         
+        // אתחול האתר
         window.loadDataFromDB();
     </script>
 </body>
