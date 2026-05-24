@@ -274,4 +274,383 @@
             searches = searches.filter(s => s.toLowerCase() !== term.toLowerCase());
             searches.unshift(term); 
             if (searches.length > 8) searches.pop(); 
-            localSto
+            localStorage.setItem('userRecentSearches', JSON.stringify(searches));
+        };
+
+        window.triggerRecentSearch = function(term) {
+            document.getElementById('searchInput').value = term;
+            window.searchProducts(true);
+        };
+
+        window.trackVisit = async function() {
+            try {
+                const ref = doc(db, "system", "analytics");
+                await setDoc(ref, { visits: increment(1) }, { merge: true });
+            } catch (e) {}
+        };
+        window.trackVisit();
+
+        window.updateAdminStats = async function() {
+            try {
+                const snap = await getDoc(doc(db, "system", "analytics"));
+                if(snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('adminStatVisits').innerText = data.visits || 0;
+                    document.getElementById('adminStatSearches').innerText = data.searches || 0;
+                    document.getElementById('adminStatUsers').innerText = data.registeredUsers || 0;
+                }
+            } catch(e) {}
+        };
+
+        function compressImage(file, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = event => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scaleSize = Math.min(1, 800 / img.width);
+                    canvas.width = img.width * scaleSize;
+                    canvas.height = img.height * scaleSize;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7)); 
+                };
+            };
+        }
+
+        window.loadDataFromDB = async function() {
+            try {
+                const docRef = doc(db, "system", "global_settings");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    window.siteConfig = { ...window.siteConfig, ...docSnap.data() };
+                }
+                applySettingsToUI();
+                window.initSlider();
+                window.checkAndShowCampaign();
+                window.loadRecentSearches();
+            } catch (e) {
+                applySettingsToUI();
+            }
+        };
+
+        window.saveDataToDB = async function() {
+            try {
+                await setDoc(doc(db, "system", "global_settings"), window.siteConfig);
+                applySettingsToUI();
+                alert("הנתונים נשמרו בענן בהצלחה!");
+            } catch (e) {
+                alert("שגיאה בשמירת נתונים לענן.");
+            }
+        };
+
+        function applySettingsToUI() {
+            const conf = window.siteConfig;
+            
+            let logoHTML = "";
+            if(conf.logoBase64) {
+                logoHTML += `<img src="${conf.logoBase64}" onclick="window.openEnlargedImage('${conf.logoBase64}')" class="h-10 w-auto object-contain shrink-0 rounded cursor-pointer hover:opacity-80 transition" title="לחץ להגדלה">`;
+                document.getElementById('dynamicFavicon').href = conf.logoBase64; 
+            } else {
+                document.getElementById('dynamicFavicon').href = "data:;base64,iVBORw0KGgo="; 
+            }
+            logoHTML += `<span class="text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">${conf.logoText}</span>`;
+            
+            document.getElementById('siteLogoDisplay').innerHTML = logoHTML;
+            document.getElementById('pageTitle').innerText = conf.logoText;
+            
+            document.getElementById('searchInput').placeholder = conf.searchPlaceholder;
+            document.getElementById('siteTitleDisplay').innerText = conf.mainTitle;
+            document.getElementById('siteDescDisplay').innerText = conf.mainDesc;
+
+            document.getElementById('adminLogoText').value = conf.logoText;
+            document.getElementById('adminSearchPlaceholder').value = conf.searchPlaceholder;
+            document.getElementById('adminMainTitle').value = conf.mainTitle;
+            document.getElementById('adminDesc').value = conf.mainDesc;
+
+            if(conf.campaign) {
+                document.getElementById('adminCampaignActive').checked = conf.campaign.active;
+                document.getElementById('adminCampaignTitle').value = conf.campaign.title;
+                document.getElementById('adminCampaignText').value = conf.campaign.text;
+                document.getElementById('adminCampaignDelay').value = conf.campaign.delay;
+                document.getElementById('adminCampaignMaxShows').value = conf.campaign.maxShows;
+                document.getElementById('adminCampaignExpiry').value = conf.campaign.expiry;
+            }
+
+            window.renderAdminSliderList();
+        }
+
+        window.openEnlargedImage = function(src) {
+            document.getElementById('enlargedImage').src = src;
+            document.getElementById('imageEnlargeModal').classList.remove('hidden');
+        };
+
+        window.saveSiteSettingsToDB = function() {
+            window.siteConfig.logoText = document.getElementById('adminLogoText').value;
+            window.siteConfig.searchPlaceholder = document.getElementById('adminSearchPlaceholder').value;
+            window.siteConfig.mainTitle = document.getElementById('adminMainTitle').value;
+            window.siteConfig.mainDesc = document.getElementById('adminDesc').value;
+
+            const fileInput = document.getElementById('adminLogoUpload');
+            if (fileInput.files && fileInput.files[0]) {
+                compressImage(fileInput.files[0], (compressedBase64) => {
+                    window.siteConfig.logoBase64 = compressedBase64;
+                    window.saveDataToDB();
+                });
+            } else {
+                window.saveDataToDB();
+            }
+        };
+
+        window.clearLogo = function() {
+            window.siteConfig.logoBase64 = "";
+            window.saveDataToDB();
+        };
+
+        window.saveCampaignToDB = function() {
+            window.siteConfig.campaign = {
+                active: document.getElementById('adminCampaignActive').checked,
+                title: document.getElementById('adminCampaignTitle').value,
+                text: document.getElementById('adminCampaignText').value,
+                btnText: "סגור",
+                delay: parseInt(document.getElementById('adminCampaignDelay').value || "3"),
+                maxShows: parseInt(document.getElementById('adminCampaignMaxShows').value || "1"),
+                expiry: document.getElementById('adminCampaignExpiry').value
+            };
+            localStorage.removeItem("userCampaignViewCount");
+            window.saveDataToDB();
+        };
+
+        window.addSliderImageToDB = function() {
+            const fileInput = document.getElementById('adminSliderUpload');
+            if (!fileInput.files || !fileInput.files[0]) return alert("אנא בחר קובץ.");
+            if (!window.siteConfig.sliderImages) window.siteConfig.sliderImages = [];
+            if (window.siteConfig.sliderImages.length >= 8) return alert("מקסימום 8 תמונות.");
+
+            compressImage(fileInput.files[0], (compressedBase64) => {
+                window.siteConfig.sliderImages.push(compressedBase64);
+                window.saveDataToDB().then(() => {
+                    fileInput.value = "";
+                    window.initSlider(); 
+                });
+            });
+        };
+
+        window.deleteSliderImageFromDB = function(index) {
+            window.siteConfig.sliderImages.splice(index, 1);
+            window.saveDataToDB().then(() => window.initSlider());
+        };
+
+        window.renderAdminSliderList = function() {
+            const listDiv = document.getElementById('adminSliderList');
+            if(!listDiv) return;
+            const images = window.siteConfig.sliderImages || [];
+            if(images.length === 0) {
+                listDiv.innerHTML = `<span class="text-xs text-gray-500 italic block">אין תמונות בגלריה.</span>`;
+                return;
+            }
+            listDiv.innerHTML = images.map((img, i) => `
+                <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800">
+                    <img src="${img}" class="w-14 h-8 object-cover rounded">
+                    <span class="text-[11px] text-gray-400">תמונה ${i+1}</span>
+                    <button onclick="window.deleteSliderImageFromDB(${i})" class="text-red-400 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                </div>
+            `).join('');
+        };
+
+        let sliderInterval = null;
+        let currentSliderIndex = 0;
+        
+        window.initSlider = function() {
+            const images = window.siteConfig.sliderImages || [];
+            const container = document.getElementById('imageSliderContainer');
+            if(images.length === 0) {
+                if(container) container.classList.add('hidden');
+                return;
+            }
+            if(container && window.currentQuery === "") container.classList.remove('hidden');
+
+            const dotsContainer = document.getElementById('sliderDots');
+            dotsContainer.innerHTML = images.map((_, i) => `<div id="dot-${i}" class="w-2 h-2 rounded-full bg-white/40 transition-all"></div>`).join('');
+
+            currentSliderIndex = 0;
+            updateSliderDOM();
+
+            if(sliderInterval) clearInterval(sliderInterval);
+            let switchCount = 0;
+            const maxSwitches = 5 * images.length;
+            
+            if(images.length > 1) {
+                sliderInterval = setInterval(() => {
+                    if(switchCount >= maxSwitches) return clearInterval(sliderInterval);
+                    currentSliderIndex = (currentSliderIndex + 1) % images.length;
+                    switchCount++;
+                    updateSliderDOM();
+                }, 3000);
+            }
+        };
+
+        function updateSliderDOM() {
+            const imgElement = document.getElementById('sliderImage');
+            const images = window.siteConfig.sliderImages || [];
+            if(!imgElement || images.length === 0) return;
+
+            imgElement.style.opacity = "0.3";
+            setTimeout(() => {
+                imgElement.src = images[currentSliderIndex];
+                imgElement.style.opacity = "1";
+                images.forEach((_, i) => {
+                    const dot = document.getElementById(`dot-${i}`);
+                    if(dot) dot.className = i === currentSliderIndex ? "w-4 h-2 rounded-full bg-white transition-all" : "w-2 h-2 rounded-full bg-white/40 transition-all";
+                });
+            }, 150);
+        }
+
+        window.checkAndShowCampaign = function() {
+            const cmp = window.siteConfig.campaign;
+            if (!cmp || !cmp.active) return;
+            if (cmp.expiry && new Date().getTime() > new Date(cmp.expiry).getTime()) return;
+            
+            const currentShows = parseInt(localStorage.getItem("userCampaignViewCount") || "0");
+            if (currentShows >= cmp.maxShows) return;
+
+            setTimeout(() => {
+                document.getElementById('campaignTitleDisplay').innerText = cmp.title;
+                document.getElementById('campaignTextDisplay').innerText = cmp.text;
+                document.getElementById('campaignModal').classList.remove('hidden');
+                localStorage.setItem("userCampaignViewCount", (currentShows + 1).toString());
+            }, (cmp.delay || 3) * 1000);
+        };
+
+        window.currentPage = 1; window.currentQuery = ""; window.currentMin = ""; window.currentMax = ""; window.isLoggedIn = false; window.pendingProductLink = "";
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.isLoggedIn = true;
+                window.loadRecentSearches(); 
+                
+                const firstName = user.displayName ? user.displayName.split(' ')[0] : 'משתמש';
+                document.getElementById('userAuthArea').innerHTML = `
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-sm font-bold">
+                        <i class="fa-solid fa-circle-user"></i> ${firstName}
+                        <button onclick="window.handleLogout()" class="ml-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
+                    </div>
+                `;
+                
+                const userRef = doc(db, "users", user.uid);
+                getDoc(userRef).then(snap => {
+                    if(!snap.exists()) {
+                        setDoc(userRef, { email: user.email, name: user.displayName, joined: new Date().toISOString() });
+                        setDoc(doc(db, "system", "analytics"), { registeredUsers: increment(1) }, { merge: true });
+                    }
+                });
+
+                if(user.email.toLowerCase() === MASTER_ADMIN_EMAIL.toLowerCase()) {
+                    document.getElementById('adminBtn').classList.remove('hidden');
+                }
+            } else {
+                window.isLoggedIn = false;
+                document.getElementById('adminBtn').classList.add('hidden');
+                document.getElementById('recentSearchesContainer').classList.add('hidden'); 
+                
+                if (!localStorage.getItem("hasSeenLoginPrompt")) {
+                    setTimeout(() => {
+                        document.getElementById('loginPromptModal').classList.remove('hidden');
+                        localStorage.setItem("hasSeenLoginPrompt", "true");
+                    }, 1500); 
+                }
+            }
+        });
+
+        window.handleGoogleLogin = async function() {
+            try {
+                await signInWithPopup(auth, provider);
+                document.getElementById('loginPromptModal').classList.add('hidden');
+                if (window.pendingProductLink) { window.open(window.pendingProductLink, '_blank'); window.pendingProductLink = ""; }
+            } catch (e) {}
+        };
+
+        window.handleLogout = function() { signOut(auth).then(() => { window.location.reload(); }); };
+
+        window.searchProducts = async function(isNewSearch) {
+            const input = document.getElementById('searchInput').value.trim();
+            if (!input) return;
+
+            document.getElementById('welcomeSection').classList.add('hidden');
+            const sliderCont = document.getElementById('imageSliderContainer');
+            if(sliderCont) sliderCont.classList.add('hidden');
+            document.getElementById('filterMessage').classList.add('hidden');
+
+            if (isNewSearch) {
+                window.currentPage = 1; window.currentQuery = input;
+                window.currentMin = document.getElementById('minPrice').value; window.currentMax = document.getElementById('maxPrice').value;
+                document.getElementById('results').innerHTML = "";
+                
+                window.saveRecentSearch(input);
+                setDoc(doc(db, "system", "analytics"), { searches: increment(1) }, { merge: true });
+            } else { window.currentPage++; }
+
+            document.getElementById('loader').classList.remove('hidden');
+
+            try {
+                let url = `/api/search?q=${encodeURIComponent(window.currentQuery)}&page=${window.currentPage}`;
+                if (window.currentMin) url += `&min=${window.currentMin}`;
+                if (window.currentMax) url += `&max=${window.currentMax}`;
+
+                const response = await fetch(url);
+                const products = await response.json();
+                document.getElementById('loader').classList.add('hidden');
+
+                if (response.status !== 200) {
+                    if(products.error) {
+                        document.getElementById('filterMessage').innerText = products.error;
+                        document.getElementById('filterMessage').classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                if (!products || products.length === 0) return;
+                renderItems(products);
+                document.getElementById('pagination').classList.remove('hidden');
+            } catch (e) { document.getElementById('loader').classList.add('hidden'); }
+        };
+
+        function renderItems(products) {
+            const grid = document.getElementById('results');
+            products.forEach(p => {
+                const price = (p.target_app_sale_price || p.target_sale_price || "0").toString().split("-")[0];
+                grid.innerHTML += `
+                    <div class="product-card bg-white rounded-2xl p-4 border border-gray-200 flex flex-col shadow-sm">
+                        <div class="relative mb-3 overflow-hidden rounded-xl bg-gray-50">
+                            <img src="${p.product_main_image_url}" class="w-full h-40 object-cover">
+                        </div>
+                        <h3 class="text-gray-800 font-semibold text-sm mb-3 line-clamp-2 h-10 leading-tight">${p.product_title}</h3>
+                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                            <div class="text-xl font-extrabold text-green-600"><span class="text-xs font-normal text-gray-400 ml-0.5">מ-</span>₪${price}</div>
+                            <button onclick="window.handleProductClick('${p.promotion_link}')" class="bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition">
+                                צפייה בדיל
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.handleProductClick = function(link) {
+            if (window.isLoggedIn) { window.open(link, '_blank'); } 
+            else { window.pendingProductLink = link; document.getElementById('loginModal').classList.remove('hidden'); }
+        };
+
+        window.toggleAdminPanel = function() { 
+            document.getElementById('adminPanel').classList.toggle('hidden'); 
+            window.updateAdminStats(); 
+        };
+        
+        document.getElementById('searchInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.searchProducts(true); });
+
+        window.loadDataFromDB();
+    </script>
+</body>
+</html>
