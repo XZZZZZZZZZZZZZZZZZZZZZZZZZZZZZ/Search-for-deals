@@ -2,73 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
-const mongoose = require('mongoose'); // תשתית למסד הנתונים הנורמלי (MongoDB)
 
 // מושך את הרשימה השחורה מהקובץ החיצוני
 const blackList = require('./blacklist.json');
 
 const app = express();
 app.use(cors());
-app.use(express.json()); // חובה כדי לקבל נתונים
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 const port = process.env.PORT || 8000;
 
-// ==========================================
-// חיבור למסד נתונים (MongoDB) - בצורה בטוחה שלא מקריסה את השרת!
-// ==========================================
-const mongoUri = process.env.MONGO_URI;
-if (mongoUri) {
-  mongoose.connect(mongoUri)
-    .then(() => console.log("✅ מחובר בהצלחה למסד הנתונים (MongoDB)"))
-    .catch(err => console.error("❌ שגיאת חיבור למסד הנתונים:", err));
-} else {
-  console.warn("⚠️ אזהרה: MONGO_URI לא מוגדר ב-Koyeb. מסד הנתונים מנותק כרגע, אבל החיפוש ימשיך לעבוד.");
-}
-
-// הגדרת המבנה (Schema) של דיל במערכת הניהול
-const DealSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  store: String,
-  price: String,
-  oldPrice: String,
-  image: String,
-  coupon: String,
-  link: String,
-  createdAt: { type: Date, default: Date.now }
-});
-const Deal = mongoose.model('Deal', DealSchema);
-
-
-// ==========================================
-// נתיבי מערכת ניהול - יעבדו ברגע שנחבר את המסד
-// ==========================================
-app.get('/api/deals', async (req, res) => {
-  if (!mongoUri) return res.json([]); // אם אין מסד, מחזיר מערך ריק כדי לא לקרוס
-  try {
-    const deals = await Deal.find().sort({ createdAt: -1 });
-    res.json(deals);
-  } catch (err) {
-    res.status(500).json({ error: "שגיאה במשיכת הדילים" });
-  }
-});
-
-app.post('/api/deals', async (req, res) => {
-  if (!mongoUri) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
-  try {
-    const newDeal = new Deal(req.body);
-    await newDeal.save();
-    res.json({ success: true, id: newDeal._id });
-  } catch (err) {
-    res.status(500).json({ error: "שגיאה בשמירת הדיל" });
-  }
-});
-
-
-// ==========================================
-// מנוע החיפוש של עלי אקספרס (הקוד המקורי שלך - ללא שינוי!)
-// ==========================================
 async function translateToEnglish(text) {
   try {
     if (!/[\u0590-\u05FF]/.test(text)) return text;
@@ -88,7 +32,6 @@ function getExactPrice(p) {
                    p.target_app_sale_price || 
                    p.target_sale_price || 
                    "0";
-  
   const priceStr = rawPrice.toString().split("-")[0].replace(/[^\d.]/g, "");
   return parseFloat(priceStr) || 0;
 }
