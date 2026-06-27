@@ -3,30 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>טירוף דיל - המבצעים הכי שווים</title>
+    <title>טירוף דיל - כל המבצעים</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap');
         
         body { 
             font-family: 'Heebo', sans-serif; 
-            /* רקע חי ועדין שנותן אווירה אבל לא מפריע לקריאה */
             background-image: linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.95)), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
         }
         
-        /* --------------------------------------
-           אנימציות למנוע החיפוש
-        --------------------------------------- */
+        /* מנוע אנימציית החיפוש */
         #search-container {
             transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* מצב 1: החיפוש באמצע המסך (כשהדף עולה) */
         .search-center {
             height: 100vh;
             display: flex;
@@ -34,7 +29,6 @@
             justify-content: center;
         }
         
-        /* מצב 2: החיפוש עולה למעלה (אחרי שהתחילו להקליד או ללחוץ) */
         .search-top {
             height: 250px;
             display: flex;
@@ -43,7 +37,6 @@
             padding-top: 2rem;
         }
         
-        /* אנימציה להופעת התוצאות */
         #results-section {
             opacity: 0;
             transform: translateY(30px);
@@ -56,190 +49,169 @@
             pointer-events: auto;
         }
 
-        /* אפקט ריחוף על כרטיסיות הדילים */
         .deal-card:hover .deal-img { transform: scale(1.05); }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen relative">
 
-    <div id="search-container" class="search-center px-4">
+    <div id="search-container" class="search-center px-4 relative z-10">
         <div class="text-center mb-8">
             <h1 class="text-5xl md:text-6xl font-black text-blue-900 mb-4 tracking-tight drop-shadow-sm">טירוף דיל</h1>
-            <p class="text-xl text-gray-700 font-medium">המבצעים והקופונים הכי שווים ברשת - מתעדכן מסביב לשעון</p>
+            <p class="text-xl text-gray-700 font-medium">המבצעים והקופונים הכי שווים ברשת - מנוע חיפוש חכם</p>
         </div>
         
-        <div class="max-w-3xl mx-auto w-full relative shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full">
-            <input type="text" id="searchInput" oninput="handleSearchInput()" onclick="forceSearchUp()" placeholder="חפש מוצר, מותג או קטגוריה (למשל: אוזניות, שעון...)" class="w-full pr-6 pl-16 py-5 rounded-full text-lg border-2 border-transparent focus:border-blue-500 focus:outline-none bg-white/95 backdrop-blur">
-            <button onclick="handleSearchInput()" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-blue-600 hover:bg-blue-700 transition rounded-full flex items-center justify-center text-white text-xl shadow-md">
+        <div class="max-w-3xl mx-auto w-full relative shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full bg-white">
+            <input type="text" id="searchInput" onkeypress="handleEnter(event)" placeholder="מה תרצו לחפש היום בעלי אקספרס?" class="w-full pr-6 pl-16 py-5 rounded-full text-lg border-2 border-transparent focus:border-blue-500 focus:outline-none bg-transparent">
+            <button onclick="performSearch()" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-blue-600 hover:bg-blue-700 transition rounded-full flex items-center justify-center text-white text-xl shadow-md cursor-pointer z-20">
                 <i class="fa-solid fa-search"></i>
             </button>
         </div>
     </div>
 
-    <div id="results-section" class="max-w-7xl mx-auto px-4 pb-16 hidden">
+    <div id="results-section" class="max-w-7xl mx-auto px-4 pb-24 hidden relative z-10">
         <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
             <h2 class="text-2xl font-bold text-gray-800">תוצאות חיפוש:</h2>
-            <span id="results-count" class="text-gray-500 text-sm font-semibold">טוען נתונים...</span>
+            <span id="results-count" class="text-gray-500 text-sm font-semibold"></span>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="deals-grid">
+        <div id="loading-msg" class="hidden text-center py-12">
+            <i class="fa-solid fa-spinner fa-spin text-5xl text-blue-500 mb-4"></i>
+            <h3 class="text-xl font-bold text-gray-700">סורק את הרשת ומחפש דילים...</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="deals-grid">
             </div>
 
         <div id="no-results-msg" class="hidden text-center py-12">
             <i class="fa-solid fa-box-open text-6xl text-gray-300 mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-600">לא מצאנו דילים שתואמים לחיפוש שלך</h3>
-            <p class="text-gray-400">נסה לחפש במילים אחרות או לבדוק שוב מאוחר יותר.</p>
+            <h3 class="text-xl font-bold text-gray-600" id="error-text">לא מצאנו דילים. נסו חיפוש אחר.</h3>
         </div>
     </div>
 
+    <div class="fixed bottom-6 left-6 z-50">
+        <a href="https://wa.me/YOUR_NUMBER_HERE" target="_blank" class="bg-white rounded-xl shadow-xl border border-gray-100 p-4 flex items-start gap-4 w-72 hover:shadow-2xl transition cursor-pointer group">
+            <div class="bg-green-100 text-green-500 w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0 group-hover:bg-green-500 group-hover:text-white transition">
+                <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1">
+                    חדשות הגזרה <span class="bg-red-500 text-white text-[9px] px-1.5 rounded-full animate-pulse">LIVE</span>
+                </h4>
+                <p class="text-xs text-gray-500 leading-tight mt-1">כל העדכונים החמים והקופונים ישירות לוואטסאפ שלכם. הצטרפו עכשיו!</p>
+            </div>
+        </a>
+    </div>
+
     <script>
-        // המערך שישמור את כל הדילים מהשרת
-        let allDeals = [];
-
-        // 1. פונקציה שטוענת את הנתונים מהשרת שלך ברגע שהדף נפתח
-        async function fetchDeals() {
-            try {
-                // כאן אנחנו פונים לשרת שלך כדי למשוך את הנתונים ממערכת הניהול.
-                // שים לב: שנה את הנתיב '/api/deals' לכתובת האמיתית שבה השרת שלך זורק את ה-JSON.
-                const response = await fetch('/api/deals'); 
-                
-                if (response.ok) {
-                    allDeals = await response.json();
-                } else {
-                    // גיבוי למקרה שהשרת לא מחזיר נתונים (נתוני דוגמה לבדיקת העיצוב)
-                    loadFallbackData();
-                }
-            } catch (error) {
-                console.error('שגיאה בטעינת הנתונים:', error);
-                loadFallbackData();
+        // האזנה למקש אנטר בשורת החיפוש
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                performSearch();
             }
         }
 
-        // 2. פונקציה שמנהלת את אנימציית שורת החיפוש והסינון
-        function handleSearchInput() {
-            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+        // הפונקציה האמיתית שמדברת עם השרת שלך
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
             const container = document.getElementById('search-container');
             const resultsSection = document.getElementById('results-section');
-            
-            // הזזת שורת החיפוש למעלה
-            if (searchTerm.length > 0 || allDeals.length > 0) {
-                forceSearchUp();
-            }
+            const grid = document.getElementById('deals-grid');
+            const loading = document.getElementById('loading-msg');
+            const noResults = document.getElementById('no-results-msg');
+            const countDisplay = document.getElementById('results-count');
 
-            // סינון הדילים לפי החיפוש
-            const filteredDeals = allDeals.filter(deal => {
-                return deal.title.toLowerCase().includes(searchTerm) || 
-                       deal.description.toLowerCase().includes(searchTerm) ||
-                       deal.store.toLowerCase().includes(searchTerm);
-            });
-
-            // ציור הדילים המסוננים למסך
-            renderDeals(filteredDeals);
-        }
-
-        // 3. פונקציה שמכריחה את החיפוש לעלות למעלה גם כשלוחצים עליו
-        function forceSearchUp() {
-            const container = document.getElementById('search-container');
-            const resultsSection = document.getElementById('results-section');
-            
+            // 1. מעלים את החיפוש למעלה
             container.classList.remove('search-center');
             container.classList.add('search-top');
-            
             resultsSection.classList.remove('hidden');
+            
             setTimeout(() => {
                 resultsSection.classList.add('show');
             }, 50);
-            
-            // אם עדיין לא חיפשו כלום, נציג את כל הדילים
-            if(document.getElementById('searchInput').value.trim() === '') {
-                renderDeals(allDeals);
+
+            // 2. מנקים תוצאות קודמות ומציגים טעינה
+            grid.innerHTML = '';
+            noResults.classList.add('hidden');
+            loading.classList.remove('hidden');
+            countDisplay.innerText = 'טוען...';
+
+            try {
+                // 3. קריאה אמיתית לשרת Node.js שלך ב-Koyeb!
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                loading.classList.add('hidden');
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    showError('לא נמצאו מוצרים תואמים לחיפוש שלך.');
+                    return;
+                }
+
+                // 4. מצייר את התוצאות
+                countDisplay.innerText = `נמצאו ${data.length} דילים חמים`;
+                renderRealDeals(data);
+
+            } catch (error) {
+                console.error("שגיאת תקשורת:", error);
+                loading.classList.add('hidden');
+                showError('אופס, הייתה בעיה בתקשורת מול השרת. נסו שוב.');
             }
         }
 
-        // 4. פונקציה שמציירת את כרטיסיות הדילים על המסך (HTML דינמי)
-        function renderDeals(dealsToRender) {
+        function showError(msg) {
+            document.getElementById('deals-grid').innerHTML = '';
+            document.getElementById('no-results-msg').classList.remove('hidden');
+            document.getElementById('error-text').innerText = msg;
+            document.getElementById('results-count').innerText = '0 תוצאות';
+        }
+
+        function renderRealDeals(products) {
             const grid = document.getElementById('deals-grid');
-            const countDisplay = document.getElementById('results-count');
-            const noResultsMsg = document.getElementById('no-results-msg');
-            
-            grid.innerHTML = ''; // ניקוי הגריד הישן
+            let html = '';
 
-            if (dealsToRender.length === 0) {
-                countDisplay.innerText = '0 תוצאות';
-                noResultsMsg.classList.remove('hidden');
-                return;
-            }
-
-            noResultsMsg.classList.add('hidden');
-            countDisplay.innerText = `נמצאו ${dealsToRender.length} דילים`;
-
-            dealsToRender.forEach(deal => {
-                // בדיקה אם יש קופון או תגית מיוחדת
-                const tagHtml = deal.coupon ? `<div class="absolute top-3 right-3 bg-red-600 text-white text-sm font-black px-3 py-1 rounded shadow-sm">${deal.coupon}</div>` : '';
+            products.forEach(p => {
+                // שאיבת נתונים מעלי אקספרס (תואם למה שהשרת שלך מחזיר)
+                const title = p.product_title || 'מוצר ללא שם';
+                const image = p.product_main_image_url || '';
+                const price = p.target_app_sale_price || p.target_sale_price || '0.00';
+                const link = p.promotion_link || '#';
                 
-                const cardHtml = `
-                    <div class="deal-card bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
-                        <div class="relative h-56 overflow-hidden bg-gray-50 flex items-center justify-center">
-                            <img src="${deal.image}" alt="${deal.title}" class="deal-img w-full h-full object-cover transition-transform duration-500">
+                // בדיקת קופון במידה והשרת מעביר
+                const discount = p.discount || '';
+                const tagHtml = discount ? `<div class="absolute top-3 right-3 bg-red-600 text-white text-sm font-black px-3 py-1 rounded shadow-sm">${discount}</div>` : '';
+
+                html += `
+                    <div class="deal-card bg-white rounded-xl shadow hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
+                        <div class="relative h-48 overflow-hidden bg-white flex items-center justify-center p-2 border-b border-gray-50">
+                            <img src="${image}" alt="תמונת מוצר" class="deal-img w-full h-full object-contain transition-transform duration-500">
                             ${tagHtml}
                         </div>
-                        <div class="p-5 flex flex-col flex-1">
+                        <div class="p-4 flex flex-col flex-1">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">${deal.store}</span>
+                                <span class="bg-[#ff4747] text-white text-[10px] font-bold px-2 py-0.5 rounded">AliExpress</span>
                             </div>
-                            <h3 class="text-lg font-bold text-gray-900 leading-tight mb-2">${deal.title}</h3>
-                            <p class="text-sm text-gray-500 mb-4 flex-1">${deal.description}</p>
+                            <h3 class="text-sm font-bold text-gray-800 leading-tight mb-3 flex-1 line-clamp-3" title="${title}">${title}</h3>
                             
-                            <div class="flex justify-between items-end mt-auto pt-4 border-t border-gray-100">
-                                <div>
-                                    <span class="text-2xl font-black text-blue-600">₪${deal.price}</span>
-                                    ${deal.oldPrice ? `<span class="text-sm text-gray-400 line-through mr-1">₪${deal.oldPrice}</span>` : ''}
-                                </div>
-                                <a href="${deal.link}" target="_blank" class="bg-[#ff6a00] hover:bg-[#e65f00] text-white px-5 py-2 rounded-lg font-bold transition shadow-sm text-center">
-                                    לקנייה <i class="fa-solid fa-arrow-left ml-1 text-sm"></i>
+                            <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
+                                <span class="text-xl font-black text-blue-700">₪${price}</span>
+                                <a href="${link}" target="_blank" class="bg-[#ff6a00] hover:bg-[#e65f00] text-white px-4 py-1.5 rounded font-bold transition shadow-sm text-sm">
+                                    לקנייה
                                 </a>
                             </div>
                         </div>
                     </div>
                 `;
-                grid.innerHTML += cardHtml;
             });
-        }
 
-        // פונקציית גיבוי ששמה נתוני דמו אם השרת ריק (כדי שהעיצוב לא יישבר עד שתסדר את מסד הנתונים)
-        function loadFallbackData() {
-            allDeals = [
-                {
-                    title: "אוזניות אלחוטיות Sony WH-1000XM4 מבטלות רעשים",
-                    description: "ירידת מחיר מטורפת על אוזניות הדגל של סוני. משלוח חינם עד הבית.",
-                    store: "עלי אקספרס",
-                    price: "899",
-                    oldPrice: "1600",
-                    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop",
-                    coupon: "-45% הנחה",
-                    link: "#"
-                },
-                {
-                    title: "שעון חכם Apple Watch Series 8",
-                    description: "הדגם החדש בצבע שחור. אל תשכחו לסמן את הקופון הירוק בקופה!",
-                    store: "אמזון",
-                    price: "1450",
-                    oldPrice: "1800",
-                    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=1000&auto=format&fit=crop",
-                    coupon: "קופון בלעדי",
-                    link: "#"
-                }
-            ];
-            // ציור הנתונים במקרה שהמשתמש כבר העלה את שורת החיפוש
-            if(document.getElementById('search-container').classList.contains('search-top')){
-                handleSearchInput();
-            }
+            grid.innerHTML = html;
         }
-
-        // הפעלת טעינת הנתונים כשהדף עולה
-        window.onload = () => {
-            fetchDeals();
-        };
     </script>
 </body>
 </html>
