@@ -3,12 +3,11 @@ const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
 
-// מושך את הרשימה השחורה מהקובץ החיצוני
 const blackList = require('./blacklist.json');
 
 const app = express();
 app.use(cors());
-
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const port = process.env.PORT || 8000;
@@ -41,7 +40,7 @@ app.get('/api/search', async (req, res) => {
   
   try {
     const originalQuery = req.query.q;
-    const page = req.query.page || "1";
+    const page = req.query.page || "1"; // תמיכה בעמודים ל"הצג תוצאות נוספות"
     const minPrice = req.query.min || ""; 
     const maxPrice = req.query.max || "";
 
@@ -57,7 +56,6 @@ app.get('/api/search', async (req, res) => {
     }
 
     const translatedQuery = await translateToEnglish(originalQuery);
-
     const translatedLower = translatedQuery.toLowerCase();
     const isTranslatedBlocked = blackList.some(word => translatedLower.includes(word.toLowerCase()));
 
@@ -82,7 +80,8 @@ app.get('/api/search', async (req, res) => {
       sign_method: "md5",
       keywords: translatedQuery,
       page_no: page,
-      page_size: "50", 
+      page_size: "50",
+      sort: "LAST_VOLUME_DESC", // חיפוש לפי הנמכרים ביותר!
       tracking_id: trackingId,
       ship_to_country: "IL",
       target_currency: "ILS",
@@ -103,30 +102,31 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
 
+    // סינון והצמדות למילות החיפוש
+    const searchWords = queryLower.split(" ").filter(w => w.length > 2);
+    
     products = products.filter(p => {
       const itemPrice = getExactPrice(p);
       const min = minPrice ? parseFloat(minPrice) : 0;
       const max = maxPrice ? parseFloat(maxPrice) : Infinity;
       const isValidPrice = itemPrice >= min && itemPrice <= max;
 
-      const rating = parseFloat(p.evaluate_rate || "0");
-      const isValidRating = rating >= 4.0 || rating === 0;
-
       const titleLower = (p.product_title || "").toLowerCase();
       const hasBlacklistWord = blackList.some(word => titleLower.includes(word.toLowerCase()));
 
-      return isValidPrice && isValidRating && !hasBlacklistWord;
+      // סינון צמוד מילים - מוודא שלפחות אחת ממילות החיפוש מופיעה בכותרת
+      const hasSearchWord = searchWords.length === 0 || searchWords.some(word => titleLower.includes(word));
+
+      return isValidPrice && !hasBlacklistWord && hasSearchWord;
     });
 
     products = products.map(p => {
-      const exactPrice = getExactPrice(p);
-      return {
-        ...p,
-        target_app_sale_price: exactPrice.toString()
-      };
+      return { ...p, target_app_sale_price: getExactPrice(p).toString() };
     });
 
-    products = products.slice(0, 10);
+    products.sort((a, b) => parseFloat(a.target_app_sale_price) - parseFloat(b.target_app_sale_price));
+    products = products.slice(0, 20); // 20 תוצאות בכל עמוד
+    
     res.json(products);
 
   } catch (error) {
