@@ -2,87 +2,73 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
-const admin = require('firebase-admin'); // חיבור לפיירבייס
-
-// הגדרת חיבור למסד הנתונים של גוגל (Firebase)
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    console.log("✅ חיבור לפיירבייס בוצע בהצלחה");
-  } catch (err) {
-    console.error("שגיאה בפענוח מפתח פיירבייס:", err);
-  }
-} else {
-  console.warn("⚠️ אזהרה: מפתח FIREBASE_SERVICE_ACCOUNT לא נמצא במשתני הסביבה.");
-}
-
-const db = admin.apps.length ? admin.firestore() : null;
+const mongoose = require('mongoose'); // תשתית למסד הנתונים הנורמלי (MongoDB)
 
 // מושך את הרשימה השחורה מהקובץ החיצוני
 const blackList = require('./blacklist.json');
 
 const app = express();
 app.use(cors());
-app.use(express.json()); // חובה כדי לקבל נתונים ממערכת הניהול
-
+app.use(express.json()); // חובה כדי לקבל נתונים
 app.use(express.static(path.join(__dirname, 'public')));
 
 const port = process.env.PORT || 8000;
 
 // ==========================================
-// נתיבים למערכת הניהול - שמירה ומשיכה של דילים (Firebase)
+// חיבור למסד נתונים (MongoDB) - בצורה בטוחה שלא מקריסה את השרת!
 // ==========================================
+const mongoUri = process.env.MONGO_URI;
+if (mongoUri) {
+  mongoose.connect(mongoUri)
+    .then(() => console.log("✅ מחובר בהצלחה למסד הנתונים (MongoDB)"))
+    .catch(err => console.error("❌ שגיאת חיבור למסד הנתונים:", err));
+} else {
+  console.warn("⚠️ אזהרה: MONGO_URI לא מוגדר ב-Koyeb. מסד הנתונים מנותק כרגע, אבל החיפוש ימשיך לעבוד.");
+}
 
-// משיכת כל הדילים שמורים במסד הנתונים
+// הגדרת המבנה (Schema) של דיל במערכת הניהול
+const DealSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  store: String,
+  price: String,
+  oldPrice: String,
+  image: String,
+  coupon: String,
+  link: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Deal = mongoose.model('Deal', DealSchema);
+
+
+// ==========================================
+// נתיבי מערכת ניהול - יעבדו ברגע שנחבר את המסד
+// ==========================================
 app.get('/api/deals', async (req, res) => {
-  if (!db) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
+  if (!mongoUri) return res.json([]); // אם אין מסד, מחזיר מערך ריק כדי לא לקרוס
   try {
-    const snapshot = await db.collection('deals').orderBy('createdAt', 'desc').get();
-    const deals = [];
-    snapshot.forEach(doc => {
-      deals.push({ id: doc.id, ...doc.data() });
-    });
+    const deals = await Deal.find().sort({ createdAt: -1 });
     res.json(deals);
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
     res.status(500).json({ error: "שגיאה במשיכת הדילים" });
   }
 });
 
-// הוספת דיל חדש למסד הנתונים
 app.post('/api/deals', async (req, res) => {
-  if (!db) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
+  if (!mongoUri) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
   try {
-    const newDeal = req.body;
-    newDeal.createdAt = admin.firestore.FieldValue.serverTimestamp();
-    const docRef = await db.collection('deals').add(newDeal);
-    res.json({ success: true, id: docRef.id });
-  } catch (error) {
-    console.error(error);
+    const newDeal = new Deal(req.body);
+    await newDeal.save();
+    res.json({ success: true, id: newDeal._id });
+  } catch (err) {
     res.status(500).json({ error: "שגיאה בשמירת הדיל" });
   }
 });
 
-// מחיקת דיל ממסד הנתונים
-app.delete('/api/deals/:id', async (req, res) => {
-  if (!db) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
-  try {
-    const { id } = req.params;
-    await db.collection('deals').doc(id).delete();
-    res.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "שגיאה במחיקת הדיל" });
-  }
-});
 
 // ==========================================
-// מנוע חיפוש - Aliexpress API (הקוד המקורי שלך)
+// מנוע החיפוש של עלי אקספרס (הקוד המקורי שלך - ללא שינוי!)
 // ==========================================
-
 async function translateToEnglish(text) {
   try {
     if (!/[\u0590-\u05FF]/.test(text)) return text;
@@ -102,6 +88,7 @@ function getExactPrice(p) {
                    p.target_app_sale_price || 
                    p.target_sale_price || 
                    "0";
+  
   const priceStr = rawPrice.toString().split("-")[0].replace(/[^\d.]/g, "");
   return parseFloat(priceStr) || 0;
 }
