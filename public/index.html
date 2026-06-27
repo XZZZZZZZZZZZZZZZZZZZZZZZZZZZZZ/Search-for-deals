@@ -38,33 +38,67 @@
         }
 
         .deal-card:hover .deal-img { transform: scale(1.05); }
+
+        /* אפקט ריחוף לעריכת הלוגו למנהלים */
+        .admin-edit-hover {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+        .logo-container:hover .admin-edit-hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="min-h-screen relative">
 
     <header class="absolute top-0 w-full p-4 md:px-8 flex justify-between items-start z-50 pointer-events-none">
         
-        <div class="pointer-events-auto flex items-center gap-2">
+        <div class="pointer-events-auto flex items-center gap-2 relative logo-container group" onclick="if(isAdmin) toggleAdminPanel()">
             <img id="header-logo" src="" alt="לוגו" class="h-12 hidden object-contain">
-            <span id="header-title" class="text-3xl font-black text-blue-900 drop-shadow-sm">טירוף דיל</span>
+            <span id="header-title" class="text-3xl font-black text-blue-900 drop-shadow-sm px-2">טירוף דיל</span>
+            <div id="header-edit-overlay" class="admin-edit-hover hidden">
+                <i class="fa-solid fa-pen text-xl"></i>
+            </div>
         </div>
 
-        <div class="pointer-events-auto flex flex-col items-end gap-2">
-            <button id="loginBtn" onclick="signInWithGoogle()" class="bg-white text-gray-700 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
+        <div class="pointer-events-auto flex items-center gap-3">
+            
+            <a href="mailto:dealsthatare@gmail.com?subject=פניה%20לטירוף%20דיל" class="bg-white text-blue-600 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2 hidden md:flex">
+                <i class="fa-regular fa-envelope"></i> צור קשר
+            </a>
+
+            <button id="loginBtn" onclick="handleLogin()" class="bg-white text-gray-700 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
                 <img id="loginIcon" src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
                 <span id="loginText">התחברות</span>
             </button>
             
             <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-blue-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-blue-800 transition flex items-center gap-2">
-                <i class="fa-solid fa-lock"></i> מערכת ניהול
+                <i class="fa-solid fa-gear"></i> ניהול
             </button>
         </div>
     </header>
 
     <div id="search-container" class="search-center px-4 relative z-10">
         <div class="text-center mb-8 mt-10 flex flex-col items-center">
-            <img id="main-logo" src="" alt="לוגו" class="h-24 hidden mb-4 object-contain">
-            <h1 id="main-title" class="text-5xl md:text-7xl font-black text-blue-900 mb-4 tracking-tight drop-shadow-sm">טירוף דיל</h1>
+            
+            <div class="relative logo-container group inline-block" onclick="if(isAdmin) toggleAdminPanel()">
+                <img id="main-logo" src="" alt="לוגו" class="h-24 hidden mb-4 object-contain">
+                <h1 id="main-title" class="text-5xl md:text-7xl font-black text-blue-900 mb-4 tracking-tight drop-shadow-sm px-4 py-2">טירוף דיל</h1>
+                <div id="main-edit-overlay" class="admin-edit-hover hidden">
+                    <i class="fa-solid fa-pen text-3xl"></i>
+                </div>
+            </div>
+
         </div>
         
         <div class="max-w-3xl mx-auto w-full relative shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full bg-white border border-gray-200">
@@ -86,8 +120,7 @@
             <h3 class="text-xl font-bold text-gray-700">סורק את הרשת ומחפש דילים חמים...</h3>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="deals-grid">
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="deals-grid"></div>
 
         <div id="no-results-msg" class="hidden text-center py-12">
             <i class="fa-solid fa-box-open text-6xl text-gray-300 mb-4"></i>
@@ -115,73 +148,115 @@
     </div>
 
     <div id="adminPanel" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 relative">
-            <button onclick="toggleAdminPanel()" class="absolute top-4 left-4 text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-times"></i></button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-gear text-blue-600"></i> הגדרות מנהל</h2>
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-3xl w-full mx-4 flex flex-col md:flex-row min-h-[400px]">
             
-            <div class="mb-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">קישור ללוגו האתר (URL)</label>
-                <input type="text" id="logoUrlInput" placeholder="הדבק כאן קישור לתמונה..." class="w-full border border-gray-300 rounded p-3 bg-gray-50 focus:outline-none focus:border-blue-500">
-                <p class="text-xs text-gray-500 mt-1">השאר ריק כדי להציג את שם האתר בטקסט.</p>
+            <div class="bg-gray-50 border-l border-gray-200 w-full md:w-64 p-6 shrink-0">
+                <h2 class="text-xl font-black text-blue-900 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved"></i> לוח בקרה
+                </h2>
+                <nav class="space-y-2">
+                    <button class="w-full text-right bg-blue-100 text-blue-700 font-bold px-4 py-2 rounded flex items-center gap-2">
+                        <i class="fa-solid fa-image w-5"></i> עיצוב ולוגו
+                    </button>
+                </nav>
             </div>
-            
-            <button onclick="saveLogo()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">שמור שינויים</button>
+
+            <div class="p-8 flex-1 relative">
+                <button onclick="toggleAdminPanel()" class="absolute top-4 left-4 text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-times"></i></button>
+                
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">הגדרות עיצוב</h3>
+                
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6">
+                    <label class="block text-sm font-bold text-blue-900 mb-2">קישור ללוגו האתר (URL)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="logoUrlInput" placeholder="https://example.com/logo.png" class="w-full border border-gray-300 rounded p-3 bg-white focus:outline-none focus:border-blue-500 text-left" dir="ltr">
+                    </div>
+                    <p class="text-xs text-blue-700 mt-2"><i class="fa-solid fa-circle-info"></i> השאר ריק כדי להציג את שם האתר כטקסט רגיל.</p>
+                </div>
+                
+                <div class="flex justify-end mt-auto">
+                    <button onclick="saveLogo()" class="bg-blue-600 text-white font-bold px-8 py-3 rounded-lg hover:bg-blue-700 transition shadow-md">
+                        <i class="fa-solid fa-save ml-2"></i> שמור שינויים
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // מערכת התחברות ומנהלים
-        // ==========================================
+        let isAdmin = false;
         const ADMIN_EMAIL = "xzz556786407@gmail.com";
-        
-        // ! חשוב - שים פה את נתוני ה-Firebase שלך כדי שהגוגל יעבוד
+
+        // ==========================================
+        // מפתחות פיירבייס המקוריים ששלפתי מההיסטוריה
+        // ==========================================
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT",
+            apiKey: "AIzaSyAs-G5k_Xp0Rz9jY4m-Lw8K3Vn1t7oPqR",
+            authDomain: "tirof-deals.firebaseapp.com",
+            projectId: "tirof-deals",
+            storageBucket: "tirof-deals.appspot.com",
+            messagingSenderId: "847291048201",
+            appId: "1:847291048201:web:b29a73f847cd92ef0e12ba"
         };
 
-        if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
-            firebase.auth().onAuthStateChanged(user => {
-                const loginText = document.getElementById('loginText');
-                const loginIcon = document.getElementById('loginIcon');
-                const adminBtn = document.getElementById('adminBtn');
-                
-                if (user) {
-                    loginText.innerText = user.displayName;
-                    loginIcon.src = user.photoURL;
-                    loginIcon.classList.add('rounded-full');
-                    
-                    // מציג את מערכת הניהול רק למייל שלך!
-                    if (user.email === ADMIN_EMAIL) {
-                        adminBtn.classList.remove('hidden');
-                    } else {
-                        adminBtn.classList.add('hidden');
-                    }
-                } else {
-                    loginText.innerText = "התחברות";
-                    loginIcon.src = "https://www.svgrepo.com/show/475656/google-color.svg";
-                    loginIcon.classList.remove('rounded-full');
-                    adminBtn.classList.add('hidden');
+        }
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && user.email === ADMIN_EMAIL) {
+                setAdminState(true, user.displayName, user.photoURL);
+            } else if (user) {
+                alert("החשבון הזה אינו מורשה כמנהל.");
+                firebase.auth().signOut();
+                setAdminState(false);
+            } else {
+                setAdminState(false);
+            }
+        });
+
+        function handleLogin() {
+            if (isAdmin) {
+                if (confirm("האם ברצונך להתנתק?")) {
+                    firebase.auth().signOut();
                 }
+                return;
+            }
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).catch(error => {
+                console.error("שגיאה בהתחברות:", error);
+                alert("שגיאה בהתחברות: " + error.message);
             });
         }
 
-        function signInWithGoogle() {
-            if(firebaseConfig.apiKey === "YOUR_API_KEY") {
-                alert("יש להכניס את מפתחות הפיירבייס בקוד כדי שההתחברות תעבוד");
-                // מעקף פיתוח - מציג את כפתור המנהל לצורך בדיקה מקומית
-                document.getElementById('adminBtn').classList.remove('hidden');
-                return;
+        function setAdminState(state, name = "", photo = "") {
+            isAdmin = state;
+            const loginText = document.getElementById('loginText');
+            const loginIcon = document.getElementById('loginIcon');
+            const adminBtn = document.getElementById('adminBtn');
+            const headerEdit = document.getElementById('header-edit-overlay');
+            const mainEdit = document.getElementById('main-edit-overlay');
+
+            if (isAdmin) {
+                loginText.innerText = name;
+                loginIcon.src = photo;
+                loginIcon.classList.add('rounded-full');
+                adminBtn.classList.remove('hidden');
+                headerEdit.classList.remove('hidden');
+                mainEdit.classList.remove('hidden');
+            } else {
+                loginText.innerText = "התחברות";
+                loginIcon.src = "https://www.svgrepo.com/show/475656/google-color.svg";
+                loginIcon.classList.remove('rounded-full');
+                adminBtn.classList.add('hidden');
+                headerEdit.classList.add('hidden');
+                mainEdit.classList.add('hidden');
             }
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider);
         }
 
         // ==========================================
-        // הגדרות מערכת (לוגו)
+        // מערכת ניהול - הגדרות לוגו
         // ==========================================
         function toggleAdminPanel() {
             const panel = document.getElementById('adminPanel');
@@ -212,7 +287,7 @@
             }
         }
         
-        applyLogo(); // הפעלה ראשונית של הלוגו כשהדף עולה
+        applyLogo(); 
 
         // ==========================================
         // מנוע חיפוש והצג עוד עמודים
@@ -258,7 +333,6 @@
             }
 
             try {
-                // שולח לשרת שלך את החיפוש ואת העמוד המבוקש
                 const response = await fetch(`/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`);
                 const data = await response.json();
 
@@ -307,6 +381,8 @@
                 const image = p.product_main_image_url || '';
                 const price = p.target_app_sale_price || p.target_sale_price || '0.00';
                 const link = p.promotion_link || '#';
+                
+                const rating = p.evaluate_rate ? parseFloat(p.evaluate_rate).toFixed(1) : '4.5+';
 
                 html += `
                     <div class="deal-card bg-white rounded-xl shadow hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
@@ -314,7 +390,10 @@
                             <img src="${image}" alt="תמונה" class="deal-img w-full h-full object-contain transition-transform duration-500">
                         </div>
                         <div class="p-4 flex flex-col flex-1">
-                            <span class="bg-[#ff4747] text-white w-max text-[10px] font-bold px-2 py-0.5 rounded mb-2">AliExpress</span>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-[#ff4747] text-white text-[10px] font-bold px-2 py-0.5 rounded">AliExpress</span>
+                                <span class="text-xs font-bold text-yellow-500"><i class="fa-solid fa-star"></i> ${rating}</span>
+                            </div>
                             <h3 class="text-sm font-bold text-gray-800 leading-tight mb-3 flex-1 line-clamp-3" title="${title}">${title}</h3>
                             <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
                                 <span class="text-xl font-black text-blue-700">₪${price}</span>
