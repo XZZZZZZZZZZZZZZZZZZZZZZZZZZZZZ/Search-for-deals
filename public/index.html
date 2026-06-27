@@ -6,6 +6,10 @@
     <title>טירוף דיל - כל המבצעים</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap');
         
@@ -55,12 +59,19 @@
 <body class="min-h-screen relative">
 
     <div class="absolute top-4 left-4 md:left-8 flex items-center gap-3 z-50">
+        
+        <button id="loginBtn" onclick="signInWithGoogle()" class="bg-white text-gray-700 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
+            <span id="loginText">התחברות מנהל</span>
+        </button>
+
         <a href="mailto:dealsthatare@gmail.com?subject=פניה%20לטירוף%20דיל" class="bg-white text-blue-600 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
             <i class="fa-regular fa-envelope"></i> צור קשר
         </a>
-        <a href="/admin" class="bg-blue-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-blue-800 transition flex items-center gap-2">
+        
+        <button onclick="checkAdminAccess()" class="bg-blue-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-blue-800 transition flex items-center gap-2">
             <i class="fa-solid fa-lock"></i> מערכת ניהול
-        </a>
+        </button>
     </div>
 
     <div id="search-container" class="search-center px-4 relative z-10">
@@ -112,6 +123,101 @@
     </div>
 
     <script>
+        // ==========================================
+        // מערכת התחברות למנהל בלבד (Google Auth)
+        // ==========================================
+        
+        // 1. רשימת האימיילים המורשים להיכנס למערכת הניהול
+        const ADMIN_EMAILS = ["dealsthatare@gmail.com"];
+        
+        // 2. הגדרות Firebase - יש להחליף את הנתונים כאן עם אלה של הפרויקט שלך
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // משתנים לשמירת מצב ההתחברות
+        let auth = null;
+        let currentUser = null;
+
+        // אתחול מערכת ההתחברות (רק אם הכנסת מפתחות אמיתיים)
+        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            
+            // מאזין למצב התחברות (כשהדף עולה)
+            auth.onAuthStateChanged(user => {
+                const loginText = document.getElementById('loginText');
+                const loginBtn = document.getElementById('loginBtn');
+                
+                if (user) {
+                    currentUser = user;
+                    loginText.innerText = "מחובר: " + user.displayName;
+                    // החלפת אייקון גוגל בתמונת הפרופיל של המשתמש
+                    loginBtn.querySelector('img').src = user.photoURL;
+                    loginBtn.querySelector('img').classList.add('rounded-full');
+                } else {
+                    currentUser = null;
+                    loginText.innerText = "התחברות מנהל";
+                    loginBtn.querySelector('img').src = "https://www.svgrepo.com/show/475656/google-color.svg";
+                    loginBtn.querySelector('img').classList.remove('rounded-full');
+                }
+            });
+        }
+
+        // פונקציית לחיצה על כפתור התחברות גוגל
+        function signInWithGoogle() {
+            if (!auth) {
+                alert("מערכת ההתחברות לא פעילה. עליך להכניס את מפתחות ה-Firebase שלך בקוד ה-HTML.");
+                return;
+            }
+            
+            if (currentUser) {
+                // המשתמש כבר מחובר - אפשרות להתנתק
+                if (confirm("אתה כבר מחובר. האם ברצונך להתנתק?")) {
+                    auth.signOut();
+                }
+                return;
+            }
+            
+            // פתיחת חלון קופץ של גוגל
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("שגיאה בהתחברות:", error);
+                alert("אירעה שגיאה בהתחברות.");
+            });
+        }
+
+        // פונקציה שמופעלת בלחיצה על "מערכת ניהול"
+        function checkAdminAccess() {
+            if (!auth) {
+                alert("מערכת ההתחברות לא מוגדרת. מעביר למערכת הניהול (מצב פיתוח בלבד).");
+                window.location.href = "/admin"; // למקרה שאתה בודק לפני שהגדרת פיירבייס
+                return;
+            }
+            
+            if (!currentUser) {
+                alert("עליך להתחבר עם חשבון גוגל מורשה כדי לגשת למערכת הניהול.");
+                return;
+            }
+            
+            // בדיקה האם האימייל מורשה
+            if (ADMIN_EMAILS.includes(currentUser.email)) {
+                window.location.href = "/admin";
+            } else {
+                alert(`החשבון המחובר (${currentUser.email}) אינו מורשה לניהול המערכת.`);
+            }
+        }
+
+
+        // ==========================================
+        // מנוע חיפוש עלי אקספרס (הלוגיקה המקורית)
+        // ==========================================
+
         function handleEnter(event) {
             if (event.key === 'Enter') {
                 performSearch();
@@ -129,7 +235,6 @@
             const noResults = document.getElementById('no-results-msg');
             const countDisplay = document.getElementById('results-count');
 
-            // האנימציה של החיפוש עולה למעלה
             container.classList.remove('search-center');
             container.classList.add('search-top');
             resultsSection.classList.remove('hidden');
@@ -138,14 +243,12 @@
                 resultsSection.classList.add('show');
             }, 50);
 
-            // מנקים תוצאות קודמות
             grid.innerHTML = '';
             noResults.classList.add('hidden');
             loading.classList.remove('hidden');
             countDisplay.innerText = 'טוען...';
 
             try {
-                // קריאה לשרת לחיפוש לייב בעלי אקספרס
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
 
