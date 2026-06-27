@@ -186,15 +186,15 @@
         const ADMIN_EMAIL = "xzz556786407@gmail.com";
 
         // ==========================================
-        // מפתחות פיירבייס המקוריים מהיסטוריית הפרויקט
+        // מפתחות ה-Firebase הרשמיים והסופיים שלך!
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-G5k_Xp0Rz9jY4m-Lw8K3Vn1t7oPqR",
-            authDomain: "tirof-deals.firebaseapp.com",
-            projectId: "tirof-deals",
-            storageBucket: "tirof-deals.appspot.com",
-            messagingSenderId: "847291048201",
-            appId: "1:847291048201:web:b29a73f847cd92ef0e12ba"
+            apiKey: "AIzaSyAMsXL7zwUCn1GhJXeOMbgZqND6_bHJdBw",
+            authDomain: "studio-3881008331-9ecf6.firebaseapp.com",
+            projectId: "studio-3881008331-9ecf6",
+            storageBucket: "studio-3881008331-9ecf6.firebasestorage.app",
+            messagingSenderId: "771547752274",
+            appId: "1:771547752274:web:dd08706e475ed57a68bc8b"
         };
 
         // אתחול רשמי של פיירבייס
@@ -215,7 +215,7 @@
             }
         });
 
-        // לוגיקת ההתחברות הרשמית של גוגל בלבד
+        // לוגיקת ההתחברות הרשמית של גוגל
         function handleLogin() {
             if (isAdmin) {
                 if (confirm("האם ברצונך להתנתק מהמערכת?")) {
@@ -227,7 +227,7 @@
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider).catch(error => {
                 console.error("שגיאה בתהליך החיבור לגוגל:", error);
-                alert("ההתחברות נכשלה. ודא כי הגדרות ה-Firebase תואמות באפליקציה.");
+                alert("ההתחברות נכשלה. ודא כי הגדרת ה-OAuth מאושרת במסוף פיירבייס.");
             });
         }
 
