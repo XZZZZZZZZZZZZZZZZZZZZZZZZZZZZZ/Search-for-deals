@@ -21,25 +21,9 @@
             background-position: center;
         }
         
-        /* מנוע אנימציית החיפוש */
-        #search-container {
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .search-center {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .search-top {
-            height: 250px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-top: 4rem;
-        }
+        #search-container { transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        .search-center { height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .search-top { height: 250px; display: flex; flex-direction: column; justify-content: center; padding-top: 5rem; }
         
         #results-section {
             opacity: 0;
@@ -58,31 +42,34 @@
 </head>
 <body class="min-h-screen relative">
 
-    <div class="absolute top-4 left-4 md:left-8 flex items-center gap-3 z-50">
+    <header class="absolute top-0 w-full p-4 md:px-8 flex justify-between items-start z-50 pointer-events-none">
         
-        <button id="loginBtn" onclick="signInWithGoogle()" class="bg-white text-gray-700 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
-            <span id="loginText">התחברות מנהל</span>
-        </button>
+        <div class="pointer-events-auto flex items-center gap-2">
+            <img id="header-logo" src="" alt="לוגו" class="h-12 hidden object-contain">
+            <span id="header-title" class="text-3xl font-black text-blue-900 drop-shadow-sm">טירוף דיל</span>
+        </div>
 
-        <a href="mailto:dealsthatare@gmail.com?subject=פניה%20לטירוף%20דיל" class="bg-white text-blue-600 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
-            <i class="fa-regular fa-envelope"></i> צור קשר
-        </a>
-        
-        <button onclick="checkAdminAccess()" class="bg-blue-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-blue-800 transition flex items-center gap-2">
-            <i class="fa-solid fa-lock"></i> מערכת ניהול
-        </button>
-    </div>
+        <div class="pointer-events-auto flex flex-col items-end gap-2">
+            <button id="loginBtn" onclick="signInWithGoogle()" class="bg-white text-gray-700 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
+                <img id="loginIcon" src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="Google">
+                <span id="loginText">התחברות</span>
+            </button>
+            
+            <button id="adminBtn" onclick="toggleAdminPanel()" class="hidden bg-blue-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-blue-800 transition flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> מערכת ניהול
+            </button>
+        </div>
+    </header>
 
     <div id="search-container" class="search-center px-4 relative z-10">
-        <div class="text-center mb-8 mt-10">
-            <h1 class="text-5xl md:text-6xl font-black text-blue-900 mb-4 tracking-tight drop-shadow-sm">טירוף דיל</h1>
-            <p class="text-xl text-gray-700 font-medium">המבצעים והקופונים הכי שווים ברשת - מנוע חיפוש חכם</p>
+        <div class="text-center mb-8 mt-10 flex flex-col items-center">
+            <img id="main-logo" src="" alt="לוגו" class="h-24 hidden mb-4 object-contain">
+            <h1 id="main-title" class="text-5xl md:text-7xl font-black text-blue-900 mb-4 tracking-tight drop-shadow-sm">טירוף דיל</h1>
         </div>
         
-        <div class="max-w-3xl mx-auto w-full relative shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full bg-white">
-            <input type="text" id="searchInput" onkeypress="handleEnter(event)" placeholder="מה תרצו לחפש היום בעלי אקספרס?" class="w-full pr-6 pl-16 py-5 rounded-full text-lg border-2 border-transparent focus:border-blue-500 focus:outline-none bg-transparent">
-            <button onclick="performSearch()" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-blue-600 hover:bg-blue-700 transition rounded-full flex items-center justify-center text-white text-xl shadow-md cursor-pointer z-20">
+        <div class="max-w-3xl mx-auto w-full relative shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full bg-white border border-gray-200">
+            <input type="text" id="searchInput" onkeypress="handleEnter(event)" placeholder="חפשו בעלי אקספרס (המוצרים הנמכרים ביותר)..." class="w-full pr-6 pl-16 py-5 rounded-full text-lg border-2 border-transparent focus:border-blue-500 focus:outline-none bg-transparent">
+            <button onclick="performSearch(false)" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-blue-600 hover:bg-blue-700 transition rounded-full flex items-center justify-center text-white text-xl shadow-md cursor-pointer z-20">
                 <i class="fa-solid fa-search"></i>
             </button>
         </div>
@@ -96,7 +83,7 @@
         
         <div id="loading-msg" class="hidden text-center py-12">
             <i class="fa-solid fa-spinner fa-spin text-5xl text-blue-500 mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-700">סורק את הרשת ומחפש דילים...</h3>
+            <h3 class="text-xl font-bold text-gray-700">סורק את הרשת ומחפש דילים חמים...</h3>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="deals-grid">
@@ -106,127 +93,140 @@
             <i class="fa-solid fa-box-open text-6xl text-gray-300 mb-4"></i>
             <h3 class="text-xl font-bold text-gray-600" id="error-text">לא מצאנו דילים. נסו חיפוש אחר.</h3>
         </div>
+
+        <div id="load-more-container" class="hidden text-center mt-10">
+            <button id="load-more-btn" onclick="performSearch(true)" class="bg-gray-100 text-blue-700 border border-blue-200 px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-sm">
+                הצג תוצאות נוספות <i class="fa-solid fa-angle-down ml-1"></i>
+            </button>
+        </div>
     </div>
 
     <div class="fixed bottom-6 right-6 z-50">
-        <a href="https://chat.whatsapp.com/JNtJ0rIHpNoGWnu5Nx0LXi" target="_blank" class="bg-white rounded-[20px] shadow-xl border border-gray-100 p-4 flex items-center gap-4 w-[340px] hover:shadow-2xl transition cursor-pointer group">
-            <div class="bg-[#dcf8c6] text-[#25D366] w-14 h-14 rounded-full flex items-center justify-center text-3xl shrink-0 transition group-hover:scale-105">
-                <i class="fa-brands fa-whatsapp"></i>
-            </div>
-            <div class="flex-1">
-                <h4 class="font-black text-gray-800 text-lg flex items-center gap-2 mb-1">
-                    חדשות הגזרה <span class="bg-[#f56565] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">LIVE</span>
+        <a href="https://chat.whatsapp.com/JNtJ0rIHpNoGWnu5Nx0LXi" target="_blank" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-4 flex items-center gap-4 hover:shadow-2xl transition cursor-pointer max-w-[320px]">
+            <div class="flex-1 text-right">
+                <h4 class="font-black text-gray-800 text-[16px] leading-tight mb-1">
+                    קבוצת הווצאפ של דילים שפשוט חבל לפספס
                 </h4>
-                <p class="text-[13px] text-gray-500 leading-tight font-medium">הצטרפו לקבוצת הווצאפ של דילים שפשוט חבל לפספס</p>
+            </div>
+            <div class="bg-[#dcf8c6] text-[#25D366] w-14 h-14 rounded-full flex items-center justify-center text-3xl shrink-0">
+                <i class="fa-brands fa-whatsapp"></i>
             </div>
         </a>
     </div>
 
+    <div id="adminPanel" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 relative">
+            <button onclick="toggleAdminPanel()" class="absolute top-4 left-4 text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-times"></i></button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-gear text-blue-600"></i> הגדרות מנהל</h2>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-2">קישור ללוגו האתר (URL)</label>
+                <input type="text" id="logoUrlInput" placeholder="הדבק כאן קישור לתמונה..." class="w-full border border-gray-300 rounded p-3 bg-gray-50 focus:outline-none focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">השאר ריק כדי להציג את שם האתר בטקסט.</p>
+            </div>
+            
+            <button onclick="saveLogo()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">שמור שינויים</button>
+        </div>
+    </div>
+
     <script>
         // ==========================================
-        // מערכת התחברות למנהל בלבד (Google Auth)
+        // מערכת התחברות ומנהלים
         // ==========================================
+        const ADMIN_EMAIL = "xzz556786407@gmail.com";
         
-        // 1. רשימת האימיילים המורשים להיכנס למערכת הניהול
-        const ADMIN_EMAILS = ["dealsthatare@gmail.com"];
-        
-        // 2. הגדרות Firebase - יש להחליף את הנתונים כאן עם אלה של הפרויקט שלך
+        // ! חשוב - שים פה את נתוני ה-Firebase שלך כדי שהגוגל יעבוד
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT",
         };
 
-        // משתנים לשמירת מצב ההתחברות
-        let auth = null;
-        let currentUser = null;
-
-        // אתחול מערכת ההתחברות (רק אם הכנסת מפתחות אמיתיים)
-        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
             firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            
-            // מאזין למצב התחברות (כשהדף עולה)
-            auth.onAuthStateChanged(user => {
+            firebase.auth().onAuthStateChanged(user => {
                 const loginText = document.getElementById('loginText');
-                const loginBtn = document.getElementById('loginBtn');
+                const loginIcon = document.getElementById('loginIcon');
+                const adminBtn = document.getElementById('adminBtn');
                 
                 if (user) {
-                    currentUser = user;
-                    loginText.innerText = "מחובר: " + user.displayName;
-                    // החלפת אייקון גוגל בתמונת הפרופיל של המשתמש
-                    loginBtn.querySelector('img').src = user.photoURL;
-                    loginBtn.querySelector('img').classList.add('rounded-full');
+                    loginText.innerText = user.displayName;
+                    loginIcon.src = user.photoURL;
+                    loginIcon.classList.add('rounded-full');
+                    
+                    // מציג את מערכת הניהול רק למייל שלך!
+                    if (user.email === ADMIN_EMAIL) {
+                        adminBtn.classList.remove('hidden');
+                    } else {
+                        adminBtn.classList.add('hidden');
+                    }
                 } else {
-                    currentUser = null;
-                    loginText.innerText = "התחברות מנהל";
-                    loginBtn.querySelector('img').src = "https://www.svgrepo.com/show/475656/google-color.svg";
-                    loginBtn.querySelector('img').classList.remove('rounded-full');
+                    loginText.innerText = "התחברות";
+                    loginIcon.src = "https://www.svgrepo.com/show/475656/google-color.svg";
+                    loginIcon.classList.remove('rounded-full');
+                    adminBtn.classList.add('hidden');
                 }
             });
         }
 
-        // פונקציית לחיצה על כפתור התחברות גוגל
         function signInWithGoogle() {
-            if (!auth) {
-                alert("מערכת ההתחברות לא פעילה. עליך להכניס את מפתחות ה-Firebase שלך בקוד ה-HTML.");
+            if(firebaseConfig.apiKey === "YOUR_API_KEY") {
+                alert("יש להכניס את מפתחות הפיירבייס בקוד כדי שההתחברות תעבוד");
+                // מעקף פיתוח - מציג את כפתור המנהל לצורך בדיקה מקומית
+                document.getElementById('adminBtn').classList.remove('hidden');
                 return;
             }
-            
-            if (currentUser) {
-                // המשתמש כבר מחובר - אפשרות להתנתק
-                if (confirm("אתה כבר מחובר. האם ברצונך להתנתק?")) {
-                    auth.signOut();
-                }
-                return;
-            }
-            
-            // פתיחת חלון קופץ של גוגל
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(error => {
-                console.error("שגיאה בהתחברות:", error);
-                alert("אירעה שגיאה בהתחברות.");
-            });
+            firebase.auth().signInWithPopup(provider);
         }
 
-        // פונקציה שמופעלת בלחיצה על "מערכת ניהול"
-        function checkAdminAccess() {
-            if (!auth) {
-                alert("מערכת ההתחברות לא מוגדרת. מעביר למערכת הניהול (מצב פיתוח בלבד).");
-                window.location.href = "/admin"; // למקרה שאתה בודק לפני שהגדרת פיירבייס
-                return;
-            }
-            
-            if (!currentUser) {
-                alert("עליך להתחבר עם חשבון גוגל מורשה כדי לגשת למערכת הניהול.");
-                return;
-            }
-            
-            // בדיקה האם האימייל מורשה
-            if (ADMIN_EMAILS.includes(currentUser.email)) {
-                window.location.href = "/admin";
+        // ==========================================
+        // הגדרות מערכת (לוגו)
+        // ==========================================
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('hidden');
+            document.getElementById('logoUrlInput').value = localStorage.getItem('siteLogo') || '';
+        }
+
+        function saveLogo() {
+            const logoUrl = document.getElementById('logoUrlInput').value.trim();
+            localStorage.setItem('siteLogo', logoUrl);
+            applyLogo();
+            toggleAdminPanel();
+        }
+
+        function applyLogo() {
+            const logoUrl = localStorage.getItem('siteLogo');
+            const hLogo = document.getElementById('header-logo');
+            const hTitle = document.getElementById('header-title');
+            const mLogo = document.getElementById('main-logo');
+            const mTitle = document.getElementById('main-title');
+
+            if (logoUrl) {
+                hLogo.src = logoUrl; hLogo.classList.remove('hidden'); hTitle.classList.add('hidden');
+                mLogo.src = logoUrl; mLogo.classList.remove('hidden'); mTitle.classList.add('hidden');
             } else {
-                alert(`החשבון המחובר (${currentUser.email}) אינו מורשה לניהול המערכת.`);
+                hLogo.classList.add('hidden'); hTitle.classList.remove('hidden');
+                mLogo.classList.add('hidden'); mTitle.classList.remove('hidden');
             }
         }
-
+        
+        applyLogo(); // הפעלה ראשונית של הלוגו כשהדף עולה
 
         // ==========================================
-        // מנוע חיפוש עלי אקספרס (הלוגיקה המקורית)
+        // מנוע חיפוש והצג עוד עמודים
         // ==========================================
+        let currentPage = 1;
+        let currentQuery = '';
 
         function handleEnter(event) {
-            if (event.key === 'Enter') {
-                performSearch();
-            }
+            if (event.key === 'Enter') performSearch(false);
         }
 
-        async function performSearch() {
+        async function performSearch(isLoadMore) {
             const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
+            if (!query && !isLoadMore) return;
 
             const container = document.getElementById('search-container');
             const resultsSection = document.getElementById('results-section');
@@ -234,43 +234,60 @@
             const loading = document.getElementById('loading-msg');
             const noResults = document.getElementById('no-results-msg');
             const countDisplay = document.getElementById('results-count');
+            const loadMoreContainer = document.getElementById('load-more-container');
+            const loadMoreBtn = document.getElementById('load-more-btn');
 
-            container.classList.remove('search-center');
-            container.classList.add('search-top');
-            resultsSection.classList.remove('hidden');
-            
-            setTimeout(() => {
-                resultsSection.classList.add('show');
-            }, 50);
-
-            grid.innerHTML = '';
-            noResults.classList.add('hidden');
-            loading.classList.remove('hidden');
-            countDisplay.innerText = 'טוען...';
+            if (!isLoadMore) {
+                currentPage = 1;
+                currentQuery = query;
+                grid.innerHTML = '';
+                loadMoreContainer.classList.add('hidden');
+                
+                container.classList.remove('search-center');
+                container.classList.add('search-top');
+                resultsSection.classList.remove('hidden');
+                setTimeout(() => resultsSection.classList.add('show'), 50);
+                
+                noResults.classList.add('hidden');
+                loading.classList.remove('hidden');
+                countDisplay.innerText = 'טוען תוצאות...';
+            } else {
+                currentPage++;
+                loadMoreBtn.innerText = 'טוען דילים נוספים...';
+                loadMoreBtn.disabled = true;
+            }
 
             try {
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                // שולח לשרת שלך את החיפוש ואת העמוד המבוקש
+                const response = await fetch(`/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`);
                 const data = await response.json();
 
-                loading.classList.add('hidden');
+                if (!isLoadMore) loading.classList.add('hidden');
 
-                if (data.error) {
-                    showError(data.error);
+                if (data.error || (!data || data.length === 0)) {
+                    if (!isLoadMore) {
+                        showError(data.error || 'לא מצאנו דילים. נסו חיפוש אחר.');
+                    } else {
+                        loadMoreBtn.innerText = 'אין עוד תוצאות';
+                        loadMoreBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
                     return;
                 }
 
-                if (!data || data.length === 0) {
-                    showError('לא נמצאו מוצרים תואמים לחיפוש שלך.');
-                    return;
-                }
-
-                countDisplay.innerText = `נמצאו ${data.length} דילים חמים`;
+                if (!isLoadMore) countDisplay.innerText = `מציג תוצאות חיות עבור החיפוש`;
+                
                 renderRealDeals(data);
 
+                loadMoreContainer.classList.remove('hidden');
+                loadMoreBtn.innerHTML = 'הצג תוצאות נוספות <i class="fa-solid fa-angle-down ml-1"></i>';
+                loadMoreBtn.disabled = false;
+
             } catch (error) {
-                console.error("שגיאת תקשורת:", error);
-                loading.classList.add('hidden');
-                showError('אופס, הייתה בעיה בתקשורת מול השרת. נסו שוב.');
+                console.error("שגיאה:", error);
+                if (!isLoadMore) {
+                    loading.classList.add('hidden');
+                    showError('שגיאת תקשורת מול עלי אקספרס.');
+                }
             }
         }
 
@@ -278,7 +295,7 @@
             document.getElementById('deals-grid').innerHTML = '';
             document.getElementById('no-results-msg').classList.remove('hidden');
             document.getElementById('error-text').innerText = msg;
-            document.getElementById('results-count').innerText = '0 תוצאות';
+            document.getElementById('load-more-container').classList.add('hidden');
         }
 
         function renderRealDeals(products) {
@@ -286,38 +303,29 @@
             let html = '';
 
             products.forEach(p => {
-                const title = p.product_title || 'מוצר ללא שם';
+                const title = p.product_title || 'מוצר';
                 const image = p.product_main_image_url || '';
                 const price = p.target_app_sale_price || p.target_sale_price || '0.00';
                 const link = p.promotion_link || '#';
-                
-                const discount = p.discount || '';
-                const tagHtml = discount ? `<div class="absolute top-3 right-3 bg-red-600 text-white text-sm font-black px-3 py-1 rounded shadow-sm">${discount}</div>` : '';
 
                 html += `
                     <div class="deal-card bg-white rounded-xl shadow hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
                         <div class="relative h-48 overflow-hidden bg-white flex items-center justify-center p-2 border-b border-gray-50">
-                            <img src="${image}" alt="תמונת מוצר" class="deal-img w-full h-full object-contain transition-transform duration-500">
-                            ${tagHtml}
+                            <img src="${image}" alt="תמונה" class="deal-img w-full h-full object-contain transition-transform duration-500">
                         </div>
                         <div class="p-4 flex flex-col flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="bg-[#ff4747] text-white text-[10px] font-bold px-2 py-0.5 rounded">AliExpress</span>
-                            </div>
+                            <span class="bg-[#ff4747] text-white w-max text-[10px] font-bold px-2 py-0.5 rounded mb-2">AliExpress</span>
                             <h3 class="text-sm font-bold text-gray-800 leading-tight mb-3 flex-1 line-clamp-3" title="${title}">${title}</h3>
-                            
                             <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
                                 <span class="text-xl font-black text-blue-700">₪${price}</span>
-                                <a href="${link}" target="_blank" class="bg-[#ff6a00] hover:bg-[#e65f00] text-white px-4 py-1.5 rounded font-bold transition shadow-sm text-sm">
-                                    לקנייה
-                                </a>
+                                <a href="${link}" target="_blank" class="bg-[#ff6a00] text-white px-4 py-1.5 rounded font-bold hover:bg-[#e65f00] transition text-sm">לקנייה</a>
                             </div>
                         </div>
                     </div>
                 `;
             });
 
-            grid.innerHTML = html;
+            grid.insertAdjacentHTML('beforeend', html);
         }
     </script>
 </body>
