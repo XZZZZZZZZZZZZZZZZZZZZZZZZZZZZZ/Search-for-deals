@@ -2,16 +2,86 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
+const admin = require('firebase-admin'); // חיבור לפיירבייס
+
+// הגדרת חיבור למסד הנתונים של גוגל (Firebase)
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("✅ חיבור לפיירבייס בוצע בהצלחה");
+  } catch (err) {
+    console.error("שגיאה בפענוח מפתח פיירבייס:", err);
+  }
+} else {
+  console.warn("⚠️ אזהרה: מפתח FIREBASE_SERVICE_ACCOUNT לא נמצא במשתני הסביבה.");
+}
+
+const db = admin.apps.length ? admin.firestore() : null;
 
 // מושך את הרשימה השחורה מהקובץ החיצוני
 const blackList = require('./blacklist.json');
 
 const app = express();
 app.use(cors());
+app.use(express.json()); // חובה כדי לקבל נתונים ממערכת הניהול
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 const port = process.env.PORT || 8000;
+
+// ==========================================
+// נתיבים למערכת הניהול - שמירה ומשיכה של דילים (Firebase)
+// ==========================================
+
+// משיכת כל הדילים שמורים במסד הנתונים
+app.get('/api/deals', async (req, res) => {
+  if (!db) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
+  try {
+    const snapshot = await db.collection('deals').orderBy('createdAt', 'desc').get();
+    const deals = [];
+    snapshot.forEach(doc => {
+      deals.push({ id: doc.id, ...doc.data() });
+    });
+    res.json(deals);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "שגיאה במשיכת הדילים" });
+  }
+});
+
+// הוספת דיל חדש למסד הנתונים
+app.post('/api/deals', async (req, res) => {
+  if (!db) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
+  try {
+    const newDeal = req.body;
+    newDeal.createdAt = admin.firestore.FieldValue.serverTimestamp();
+    const docRef = await db.collection('deals').add(newDeal);
+    res.json({ success: true, id: docRef.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "שגיאה בשמירת הדיל" });
+  }
+});
+
+// מחיקת דיל ממסד הנתונים
+app.delete('/api/deals/:id', async (req, res) => {
+  if (!db) return res.status(500).json({ error: "מסד נתונים לא מחובר" });
+  try {
+    const { id } = req.params;
+    await db.collection('deals').doc(id).delete();
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "שגיאה במחיקת הדיל" });
+  }
+});
+
+// ==========================================
+// מנוע חיפוש - Aliexpress API (הקוד המקורי שלך)
+// ==========================================
 
 async function translateToEnglish(text) {
   try {
@@ -26,16 +96,12 @@ async function translateToEnglish(text) {
   }
 }
 
-// פונקציית עזר פנימית לחילוץ המחיר המדויק ביותר של הדיל
 function getExactPrice(p) {
-  // בודק סדר עדיפויות של שדות המחיר המוזלים והמדויקים ביותר של עליאקספרס
   const rawPrice = p.target_app_sale_price_attain_value || 
                    p.target_sale_price_attain_value || 
                    p.target_app_sale_price || 
                    p.target_sale_price || 
                    "0";
-  
-  // מנקה תווים מיותרים ולוקח את המספר הראשון במידה ויש טווח (למשל "10-20")
   const priceStr = rawPrice.toString().split("-")[0].replace(/[^\d.]/g, "");
   return parseFloat(priceStr) || 0;
 }
@@ -53,7 +119,6 @@ app.get('/api/search', async (req, res) => {
       return res.status(400).json({ error: "אנא הזן מילת חיפוש" });
     }
 
-    // --- חסימה מוקדמת: בדיקה האם מילת החיפוש בעברית חסומה ---
     const queryLower = originalQuery.toLowerCase();
     const isQueryBlocked = blackList.some(word => queryLower.includes(word.toLowerCase()));
     
@@ -63,7 +128,6 @@ app.get('/api/search', async (req, res) => {
 
     const translatedQuery = await translateToEnglish(originalQuery);
 
-    // --- חסימה מוקדמת: בדיקה האם התרגום לאנגלית של החיפוש חסום ---
     const translatedLower = translatedQuery.toLowerCase();
     const isTranslatedBlocked = blackList.some(word => translatedLower.includes(word.toLowerCase()));
 
@@ -109,31 +173,26 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: data.error_response.msg, code: data.error_response.code });
     }
 
-    // --- מערכת הסלקטור (סינון תוצאות) ---
     products = products.filter(p => {
-      // 1. סינון מחיר בעזרת הפונקציה המדויקת החדשה
       const itemPrice = getExactPrice(p);
       const min = minPrice ? parseFloat(minPrice) : 0;
       const max = maxPrice ? parseFloat(maxPrice) : Infinity;
       const isValidPrice = itemPrice >= min && itemPrice <= max;
 
-      // 2. סינון דירוג
       const rating = parseFloat(p.evaluate_rate || "0");
       const isValidRating = rating >= 4.0 || rating === 0;
 
-      // 3. סינון רשימה שחורה על כותרות המוצרים
       const titleLower = (p.product_title || "").toLowerCase();
       const hasBlacklistWord = blackList.some(word => titleLower.includes(word.toLowerCase()));
 
       return isValidPrice && isValidRating && !hasBlacklistWord;
     });
 
-    // דריסת השדה הישן בשדה המחיר המדויק לפני שליחה לאתר, כדי שהאתר יציג בדיוק את המחיר הנכון
     products = products.map(p => {
       const exactPrice = getExactPrice(p);
       return {
         ...p,
-        target_app_sale_price: exactPrice.toString() // מעדכן את השדה שהאתר קורא
+        target_app_sale_price: exactPrice.toString()
       };
     });
 
