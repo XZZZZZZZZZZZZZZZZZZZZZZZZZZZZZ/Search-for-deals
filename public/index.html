@@ -34,7 +34,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding-top: 2rem;
+            padding-top: 4rem;
         }
         
         #results-section {
@@ -54,8 +54,17 @@
 </head>
 <body class="min-h-screen relative">
 
+    <div class="absolute top-4 left-4 md:left-8 flex items-center gap-3 z-50">
+        <a href="mailto:dealsthatare@gmail.com?subject=פניה%20לטירוף%20דיל" class="bg-white text-blue-600 px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-gray-50 transition border border-gray-100 flex items-center gap-2">
+            <i class="fa-regular fa-envelope"></i> צור קשר
+        </a>
+        <a href="/admin" class="bg-blue-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md hover:bg-blue-800 transition flex items-center gap-2">
+            <i class="fa-solid fa-lock"></i> מערכת ניהול
+        </a>
+    </div>
+
     <div id="search-container" class="search-center px-4 relative z-10">
-        <div class="text-center mb-8">
+        <div class="text-center mb-8 mt-10">
             <h1 class="text-5xl md:text-6xl font-black text-blue-900 mb-4 tracking-tight drop-shadow-sm">טירוף דיל</h1>
             <p class="text-xl text-gray-700 font-medium">המבצעים והקופונים הכי שווים ברשת - מנוע חיפוש חכם</p>
         </div>
@@ -68,7 +77,7 @@
         </div>
     </div>
 
-    <div id="results-section" class="max-w-7xl mx-auto px-4 pb-24 hidden relative z-10">
+    <div id="results-section" class="max-w-7xl mx-auto px-4 pb-32 hidden relative z-10">
         <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
             <h2 class="text-2xl font-bold text-gray-800">תוצאות חיפוש:</h2>
             <span id="results-count" class="text-gray-500 text-sm font-semibold"></span>
@@ -88,29 +97,27 @@
         </div>
     </div>
 
-    <div class="fixed bottom-6 left-6 z-50">
-        <a href="https://wa.me/YOUR_NUMBER_HERE" target="_blank" class="bg-white rounded-xl shadow-xl border border-gray-100 p-4 flex items-start gap-4 w-72 hover:shadow-2xl transition cursor-pointer group">
-            <div class="bg-green-100 text-green-500 w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0 group-hover:bg-green-500 group-hover:text-white transition">
+    <div class="fixed bottom-6 right-6 z-50">
+        <a href="https://chat.whatsapp.com/JNtJ0rIHpNoGWnu5Nx0LXi" target="_blank" class="bg-white rounded-[20px] shadow-xl border border-gray-100 p-4 flex items-center gap-4 w-[340px] hover:shadow-2xl transition cursor-pointer group">
+            <div class="bg-[#dcf8c6] text-[#25D366] w-14 h-14 rounded-full flex items-center justify-center text-3xl shrink-0 transition group-hover:scale-105">
                 <i class="fa-brands fa-whatsapp"></i>
             </div>
-            <div>
-                <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1">
-                    חדשות הגזרה <span class="bg-red-500 text-white text-[9px] px-1.5 rounded-full animate-pulse">LIVE</span>
+            <div class="flex-1">
+                <h4 class="font-black text-gray-800 text-lg flex items-center gap-2 mb-1">
+                    חדשות הגזרה <span class="bg-[#f56565] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">LIVE</span>
                 </h4>
-                <p class="text-xs text-gray-500 leading-tight mt-1">כל העדכונים החמים והקופונים ישירות לוואטסאפ שלכם. הצטרפו עכשיו!</p>
+                <p class="text-[13px] text-gray-500 leading-tight font-medium">הצטרפו לקבוצת הווצאפ של דילים שפשוט חבל לפספס</p>
             </div>
         </a>
     </div>
 
     <script>
-        // האזנה למקש אנטר בשורת החיפוש
         function handleEnter(event) {
             if (event.key === 'Enter') {
                 performSearch();
             }
         }
 
-        // הפונקציה האמיתית שמדברת עם השרת שלך
         async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
@@ -122,7 +129,7 @@
             const noResults = document.getElementById('no-results-msg');
             const countDisplay = document.getElementById('results-count');
 
-            // 1. מעלים את החיפוש למעלה
+            // האנימציה של החיפוש עולה למעלה
             container.classList.remove('search-center');
             container.classList.add('search-top');
             resultsSection.classList.remove('hidden');
@@ -131,14 +138,14 @@
                 resultsSection.classList.add('show');
             }, 50);
 
-            // 2. מנקים תוצאות קודמות ומציגים טעינה
+            // מנקים תוצאות קודמות
             grid.innerHTML = '';
             noResults.classList.add('hidden');
             loading.classList.remove('hidden');
             countDisplay.innerText = 'טוען...';
 
             try {
-                // 3. קריאה אמיתית לשרת Node.js שלך ב-Koyeb!
+                // קריאה לשרת לחיפוש לייב בעלי אקספרס
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
 
@@ -154,7 +161,6 @@
                     return;
                 }
 
-                // 4. מצייר את התוצאות
                 countDisplay.innerText = `נמצאו ${data.length} דילים חמים`;
                 renderRealDeals(data);
 
@@ -177,13 +183,11 @@
             let html = '';
 
             products.forEach(p => {
-                // שאיבת נתונים מעלי אקספרס (תואם למה שהשרת שלך מחזיר)
                 const title = p.product_title || 'מוצר ללא שם';
                 const image = p.product_main_image_url || '';
                 const price = p.target_app_sale_price || p.target_sale_price || '0.00';
                 const link = p.promotion_link || '#';
                 
-                // בדיקת קופון במידה והשרת מעביר
                 const discount = p.discount || '';
                 const tagHtml = discount ? `<div class="absolute top-3 right-3 bg-red-600 text-white text-sm font-black px-3 py-1 rounded shadow-sm">${discount}</div>` : '';
 
