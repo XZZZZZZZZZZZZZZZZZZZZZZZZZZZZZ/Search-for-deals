@@ -54,9 +54,7 @@
             transition: opacity 0.2s;
             cursor: pointer;
         }
-        .logo-container:hover .admin-edit-hover {
-            opacity: 1;
-        }
+        .logo-container:hover .admin-edit-hover { opacity: 1; }
     </style>
 </head>
 <body class="min-h-screen relative">
@@ -188,7 +186,7 @@
         const ADMIN_EMAIL = "xzz556786407@gmail.com";
 
         // ==========================================
-        // מפתחות פיירבייס המקוריים ששלפתי מההיסטוריה
+        // מפתחות פיירבייס המקוריים מהיסטוריית הפרויקט
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAs-G5k_Xp0Rz9jY4m-Lw8K3Vn1t7oPqR",
@@ -199,15 +197,17 @@
             appId: "1:847291048201:web:b29a73f847cd92ef0e12ba"
         };
 
+        // אתחול רשמי של פיירבייס
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
 
+        // האזנה למצב החיבור של גוגל
         firebase.auth().onAuthStateChanged(user => {
             if (user && user.email === ADMIN_EMAIL) {
                 setAdminState(true, user.displayName, user.photoURL);
             } else if (user) {
-                alert("החשבון הזה אינו מורשה כמנהל.");
+                alert("החשבון המחובר אינו מורשה כמנהל המערכת.");
                 firebase.auth().signOut();
                 setAdminState(false);
             } else {
@@ -215,9 +215,10 @@
             }
         });
 
+        // לוגיקת ההתחברות הרשמית של גוגל בלבד
         function handleLogin() {
             if (isAdmin) {
-                if (confirm("האם ברצונך להתנתק?")) {
+                if (confirm("האם ברצונך להתנתק מהמערכת?")) {
                     firebase.auth().signOut();
                 }
                 return;
@@ -225,8 +226,8 @@
 
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider).catch(error => {
-                console.error("שגיאה בהתחברות:", error);
-                alert("שגיאה בהתחברות: " + error.message);
+                console.error("שגיאה בתהליך החיבור לגוגל:", error);
+                alert("ההתחברות נכשלה. ודא כי הגדרות ה-Firebase תואמות באפליקציה.");
             });
         }
 
@@ -243,15 +244,15 @@
                 loginIcon.src = photo;
                 loginIcon.classList.add('rounded-full');
                 adminBtn.classList.remove('hidden');
-                headerEdit.classList.remove('hidden');
-                mainEdit.classList.remove('hidden');
+                if(headerEdit) headerEdit.classList.remove('hidden');
+                if(mainEdit) mainEdit.classList.remove('hidden');
             } else {
                 loginText.innerText = "התחברות";
                 loginIcon.src = "https://www.svgrepo.com/show/475656/google-color.svg";
                 loginIcon.classList.remove('rounded-full');
                 adminBtn.classList.add('hidden');
-                headerEdit.classList.add('hidden');
-                mainEdit.classList.add('hidden');
+                if(headerEdit) headerEdit.classList.add('hidden');
+                if(mainEdit) mainEdit.classList.add('hidden');
             }
         }
 
@@ -279,11 +280,15 @@
             const mTitle = document.getElementById('main-title');
 
             if (logoUrl) {
-                hLogo.src = logoUrl; hLogo.classList.remove('hidden'); hTitle.classList.add('hidden');
-                mLogo.src = logoUrl; mLogo.classList.remove('hidden'); mTitle.classList.add('hidden');
+                if(hLogo) { hLogo.src = logoUrl; hLogo.classList.remove('hidden'); }
+                if(hTitle) hTitle.classList.add('hidden');
+                if(mLogo) { mLogo.src = logoUrl; mLogo.classList.remove('hidden'); }
+                if(mTitle) mTitle.classList.add('hidden');
             } else {
-                hLogo.classList.add('hidden'); hTitle.classList.remove('hidden');
-                mLogo.classList.add('hidden'); mTitle.classList.remove('hidden');
+                if(hLogo) hLogo.classList.add('hidden');
+                if(hTitle) hTitle.classList.remove('hidden');
+                if(mLogo) mLogo.classList.add('hidden');
+                if(mTitle) mTitle.classList.remove('hidden');
             }
         }
         
