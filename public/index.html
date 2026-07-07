@@ -184,6 +184,9 @@
     <script>
         let isAdmin = false;
         const ADMIN_EMAIL = "xzz556786407@gmail.com";
+        
+        // מזהה הלקוח שיצרנו ב-Google Cloud
+        const GOOGLE_CLIENT_ID = "771547752274-da76jqca0jioi6uh9vhuj5ivqia836m7.apps.googleusercontent.com";
 
         // ==========================================
         // מפתחות ה-Firebase הרשמיים והסופיים שלך!
@@ -225,6 +228,7 @@
             }
 
             const provider = new firebase.auth.GoogleAuthProvider();
+            // פיירבייס יודע להשתמש אוטומטית בהגדרות שהזנו במסוף שלו
             firebase.auth().signInWithPopup(provider).catch(error => {
                 console.error("שגיאה בתהליך החיבור לגוגל:", error);
                 alert("ההתחברות נכשלה. ודא כי הגדרת ה-OAuth מאושרת במסוף פיירבייס.");
